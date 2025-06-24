@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light;
+  color: theme('colors.text');
+  background-color: theme('colors.background');
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: theme('colors.accent');
+  text-decoration: inherit;
+}
+a:hover {
+  color: theme('colors.border');
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: theme('colors.background');
+  color: theme('colors.text');
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+  color: theme('colors.accent');
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid theme('colors.border');
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: theme('colors.accent');
+  color: theme('colors.background');
+  cursor: pointer;
+  transition: border-color 0.25s, background-color 0.25s;
+}
+button:hover {
+  border-color: theme('colors.border');
+  background-color: theme('colors.card');
+  color: theme('colors.text');
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto theme('colors.border');
+}
+
+.card, .content-container, .section-bg {
+  background-color: theme('colors.card');
+  border: 1px solid theme('colors.border');
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.03);
+}
+
+.divider, .section-divider {
+  border-color: theme('colors.border');
+}
+
+.navbar, .page-title, .cta, .important-icon {
+  background-color: theme('colors.accent');
+  color: theme('colors.background');
+}
+
+/* Remove old color overrides for light/dark */
+@media (prefers-color-scheme: light) {
+  :root {}
+  a:hover {}
+  button {}
+}
