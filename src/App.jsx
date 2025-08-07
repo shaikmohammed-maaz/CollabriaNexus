@@ -15,7 +15,7 @@ function App() {
     <Router>
       <NavBar />
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/CollabriaNexus/" element={<Home />} />
         <Route
           path="/login"
           element={
