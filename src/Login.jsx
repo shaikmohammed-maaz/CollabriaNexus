@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
 import LoginImg from './assets/LoginImg.png';
 
-export default function Login() {
+export default function Login({ onLogin }) {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -46,8 +46,9 @@ export default function Login() {
     setIsLoading(true);
     // Simulate API call
     setTimeout(() => {
-      console.log('Login data:', formData, 'Remember me:', rememberMe);
       setIsLoading(false);
+      onLogin();
+      navigate("/");
     }, 2000);
   };
 
@@ -137,7 +138,7 @@ export default function Login() {
           </form>
           
           <div className="mt-8 text-center text-sm text-textMuted">
-            New to our community? <a href="#" className="text-accent hover:text-accentLight hover:underline font-medium">Create your account</a>
+            New to our community? <a href="/SignUp" className="text-accent hover:text-accentLight hover:underline font-medium">Create your account</a>
           </div>
           
           {/* Quick stats */}

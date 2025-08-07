@@ -1,7 +1,7 @@
 import React from "react";
 import NavBar from "./NavBar";
-import Footer from "./Footer";
 import { FaRocket, FaChartBar, FaUserAstronaut, FaCoins } from "react-icons/fa";
+import AboutSection from "./AboutSection";
 
 export default function Home() {
   return (
@@ -71,6 +71,7 @@ export default function Home() {
               border: "1px solid rgba(147, 51, 234, 0.3)",
               backdropFilter: "blur(12px)",
             }}
+            onClick={() => window.location.href = "/dashboard"}
           >
             Start Your Journey
           </button>
@@ -80,7 +81,7 @@ export default function Home() {
       {/* Informative Floating Boxes Section */}
       <section className="w-full flex flex-wrap justify-center gap-8 py-12 px-6 relative z-0">
         {/* Box 1 – Blog & Company Insights */}
-        <div className="relative w-[280px] h-[280px] rotate-[-6deg] translate-y-3">
+        <div className="relative w-[280px] h-[280px] rotate-[-6deg] translate-y-3 dance dance-delay-1">
           <div className="circle-cut w-full h-full p-5 flex flex-col justify-center text-white">
             <h3 className="text-lg font-semibold mb-2">
               Inspiring Articles & Proven Paths
@@ -93,7 +94,7 @@ export default function Home() {
         </div>
 
         {/* Box 2 – Learning / Mine Feature */}
-        <div className="relative w-[300px] h-[240px] rotate-[8deg] -translate-y-2">
+        <div className="relative w-[300px] h-[240px] rotate-[8deg] -translate-y-2 dance dance-delay-2">
           <div className="inner-curve w-full h-full p-5 flex flex-col justify-center text-white">
             <h3 className="text-lg font-semibold mb-2">
               Mine Insights, Build Your Future
@@ -106,7 +107,7 @@ export default function Home() {
         </div>
 
         {/* Box 3 – Curated News & Motivation */}
-        <div className="relative w-[280px] h-[280px] rotate-[5deg] translate-y-6">
+        <div className="relative w-[280px] h-[280px] rotate-[5deg] translate-y-6 dance dance-delay-3">
           <div className="circle-cut w-full h-full p-5 flex flex-col justify-center text-white">
             <h3 className="text-lg font-semibold mb-2">
               Stay Ahead with Curated News
@@ -119,7 +120,7 @@ export default function Home() {
         </div>
 
         {/* Box 4 – Mentorship & Expert Advice */}
-        <div className="relative w-[300px] h-[240px] rotate-[-12deg] -translate-y-4">
+        <div className="relative w-[300px] h-[240px] rotate-[-12deg] -translate-y-4 dance dance-delay-4">
           <div className="inner-curve w-full h-full p-5 flex flex-col justify-center text-white">
             <h3 className="text-lg font-semibold mb-2">
               Connect with Mentors, Unlock New Perspectives
@@ -132,8 +133,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <Footer />
+      {/* About Section */}
+      <AboutSection />
+
     </div>
   );
 }

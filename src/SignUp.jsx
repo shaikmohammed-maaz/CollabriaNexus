@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Eye, EyeOff, Users, BookOpen, Award, Globe } from "lucide-react";
 import LoginImg from './assets/LoginImg.png';
 
-export default function SignUp() {
+export default function SignUp({ onSignUp }) {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -62,6 +62,8 @@ export default function SignUp() {
     setTimeout(() => {
       console.log('Sign up data:', formData);
       setIsLoading(false);
+      onSignUp(); 
+      navigate("/");
     }, 2000);
   };
 
