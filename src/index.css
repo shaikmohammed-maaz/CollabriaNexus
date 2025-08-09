@@ -324,3 +324,17 @@ input[type="checkbox"] {
 .dance-delay-2 { animation-delay: 0.5s; }
 .dance-delay-3 { animation-delay: 0.8s; }
 .dance-delay-4 { animation-delay: 1.1s; }
+
+/* Optional Tailwind plugin or manual CSS */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+
+@keyframes spin-slow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.animate-spin-slow {
+  animation: spin-slow 10s linear infinite;
+}

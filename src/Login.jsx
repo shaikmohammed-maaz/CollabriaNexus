@@ -57,7 +57,7 @@ export default function Login({ onLogin }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8 md:py-16 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8 md:py-16 pt-20 relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-20 right-20 w-64 h-64 bg-accent/20 rounded-full blur-3xl floating" />

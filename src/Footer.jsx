@@ -6,6 +6,13 @@ export default function Footer() {
     <footer className="w-full bg-[#181828] border-t border-violet-900/30 py-8 px-4 mt-auto">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="flex items-center gap-3">
+          <span className="" >
+            <img
+              src="./src/assets/LOGO.png"
+              alt="Collabria Nexus Logo"
+              className="w-20 h-10"
+            />
+          </span>
           <span className="text-2xl font-extrabold text-violet-400 tracking-tight">CollabriaNexus</span>
           <span className="text-gray-500 text-sm hidden sm:inline">Empowering Your Journey</span>
         </div>

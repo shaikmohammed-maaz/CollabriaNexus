@@ -7,15 +7,20 @@ import Home from './Home';
 import NavBar from './NavBar';
 import Footer from './Footer';
 import Dashboard from "./DashBoard";
+import BlogPage from "./Blog";
+import AboutUs from "./Aboutus";
+import ContactUs from "./ContactUs";
+import Friends from "./Friends";
+import Profile from "./Profile";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   return (
-    <Router>
+    <Router basename="/CollabriaNexus">
       <NavBar />
       <Routes>
-        <Route path="/CollabriaNexus/" element={<Home />} />
+        <Route path="/" element={<Home />} />
         <Route
           path="/login"
           element={
@@ -40,7 +45,12 @@ function App() {
               : <Navigate to="/login" replace />
           }
         />
-        {/* Add more protected routes as needed */}
+        <Route path="/blog" element={<BlogPage />} />
+        <Route path="/about" element={<AboutUs />} />
+        <Route path="/contact" element={<ContactUs />} />
+        <Route path="/friends" element={<Friends />} />
+        <Route path="/profile" element={<Profile />} />
+
       </Routes>
       <Footer />
     </Router>

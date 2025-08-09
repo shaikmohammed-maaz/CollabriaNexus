@@ -68,7 +68,7 @@ export default function SignUp({ onSignUp }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8 md:py-16 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8 md:py-16 pt-20 relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-20 left-20 w-64 h-64 bg-accent/20 rounded-full blur-3xl floating" />
@@ -78,7 +78,7 @@ export default function SignUp({ onSignUp }) {
         {/* Left Side - Form */}
         <div className="flex-1 p-10 lg:p-12 flex flex-col justify-center">
           <div className="mb-8">
-            <span className="font-bold text-3xl text-accent">.KnowledgeHub</span>
+            <span className="font-bold text-3xl text-accent">Collabria Nexus</span>
             <p className="text-textMuted mt-2 text-sm">Empowering minds, building futures</p>
           </div>
           <h2 className="text-3xl lg:text-4xl font-bold mb-2 text-accentLight">Join Our Community</h2>
