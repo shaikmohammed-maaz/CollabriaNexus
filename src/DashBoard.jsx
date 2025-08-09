@@ -16,6 +16,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background text-text flex pt-20 py-10 relative">
+      
       {/* Sidebar */}
       <aside
         className={`
@@ -40,7 +41,7 @@ export default function Dashboard() {
               <FaUserFriends />
             </button>
           </Link>
-          <Link to="/blog" className="block">
+          <Link to="/work-in-progress" className="block">
           <button className="text-violet-400 hover:text-violet-300 transition text-2xl">            
               <FaNewspaper />
           </button>

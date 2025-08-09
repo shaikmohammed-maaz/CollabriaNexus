@@ -12,6 +12,7 @@ import AboutUs from "./Aboutus";
 import ContactUs from "./ContactUs";
 import Friends from "./Friends";
 import Profile from "./Profile";
+import WorkInProgress from "./WorkInProgress";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -50,6 +51,7 @@ function App() {
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/friends" element={<Friends />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/work-in-progress" element={<WorkInProgress />} />
 
       </Routes>
       <Footer />
