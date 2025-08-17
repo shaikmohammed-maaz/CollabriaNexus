@@ -248,7 +248,6 @@ export const createUserProfile = async (uid, userData) => {
       }
     }
 
-    
     return { success: true };
   } catch (error) {
     console.error('Error creating user profile:', error);

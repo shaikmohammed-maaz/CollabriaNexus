@@ -26,55 +26,64 @@ const MiningSection = () => {
   const unsubscribeRef = useRef(null);
 
   // FIXED: More robust safe property access
-  const stats = (userProfile && userProfile.stats) ? {
-    coinsEarned: userProfile.stats.coinsEarned ?? 0,
-    totalCoinsEarned: userProfile.stats.totalCoinsEarned ?? 0,
-    level: userProfile.stats.level ?? 1,
-    currentTier: userProfile.stats.currentTier ?? "Bronze Miner",
-    nextTier: userProfile.stats.nextTier ?? "Silver Miner",
-    tierProgress: userProfile.stats.tierProgress ?? 0,
-    currentStreak: userProfile.stats.currentStreak ?? 0,
-    totalMined: userProfile.stats.totalMined ?? 0,
-    rank: userProfile.stats.rank ?? "#0",
-    isVip: userProfile.stats.isVip ?? false,
-  } : {
-    coinsEarned: 0,
-    totalCoinsEarned: 0,
-    level: 1,
-    currentTier: "Bronze Miner",
-    nextTier: "Silver Miner",
-    tierProgress: 0,
-    currentStreak: 0,
-    totalMined: 0,
-    rank: "#0",
-    isVip: false,
-  };
+  const stats =
+    userProfile && userProfile.stats
+      ? {
+          coinsEarned: userProfile.stats.coinsEarned ?? 0,
+          totalCoinsEarned: userProfile.stats.totalCoinsEarned ?? 0,
+          level: userProfile.stats.level ?? 1,
+          currentTier: userProfile.stats.currentTier ?? "Bronze Miner",
+          nextTier: userProfile.stats.nextTier ?? "Silver Miner",
+          tierProgress: userProfile.stats.tierProgress ?? 0,
+          currentStreak: userProfile.stats.currentStreak ?? 0,
+          totalMined: userProfile.stats.totalMined ?? 0,
+          rank: userProfile.stats.rank ?? "#0",
+          isVip: userProfile.stats.isVip ?? false,
+        }
+      : {
+          coinsEarned: 0,
+          totalCoinsEarned: 0,
+          level: 1,
+          currentTier: "Bronze Miner",
+          nextTier: "Silver Miner",
+          tierProgress: 0,
+          currentStreak: 0,
+          totalMined: 0,
+          rank: "#0",
+          isVip: false,
+        };
 
-  const mining = (userProfile && userProfile.mining) ? {
-    isMining: userProfile.mining.isMining ?? false,
-    lastMiningStart: userProfile.mining.lastMiningStart ?? null,
-    coinsMined: userProfile.mining.coinsMined ?? 0,
-    nextAvailable: userProfile.mining.nextAvailable ?? null,
-    totalMiningSessions: userProfile.mining.totalMiningSessions ?? 0,
-    miningRate: userProfile.mining.miningRate ?? 3.0,
-  } : {
-    isMining: false,
-    lastMiningStart: null,
-    coinsMined: 0,
-    nextAvailable: null,
-    totalMiningSessions: 0,
-    miningRate: 3.0,
-  };
+  const mining =
+    userProfile && userProfile.mining
+      ? {
+          isMining: userProfile.mining.isMining ?? false,
+          lastMiningStart: userProfile.mining.lastMiningStart ?? null,
+          coinsMined: userProfile.mining.coinsMined ?? 0,
+          nextAvailable: userProfile.mining.nextAvailable ?? null,
+          totalMiningSessions: userProfile.mining.totalMiningSessions ?? 0,
+          miningRate: userProfile.mining.miningRate ?? 3.0,
+        }
+      : {
+          isMining: false,
+          lastMiningStart: null,
+          coinsMined: 0,
+          nextAvailable: null,
+          totalMiningSessions: 0,
+          miningRate: 3.0,
+        };
 
-  const profile = (userProfile && userProfile.profile) ? {
-    referralCode: userProfile.profile.referralCode ?? "",
-    username: userProfile.profile.username ?? "",
-    email: userProfile.profile.email ?? "",
-  } : {
-    referralCode: "",
-    username: "",
-    email: "",
-  };
+  const profile =
+    userProfile && userProfile.profile
+      ? {
+          referralCode: userProfile.profile.referralCode ?? "",
+          username: userProfile.profile.username ?? "",
+          email: userProfile.profile.email ?? "",
+        }
+      : {
+          referralCode: "",
+          username: "",
+          email: "",
+        };
 
   // Initialize mining state from Firebase
   useEffect(() => {
@@ -236,7 +245,6 @@ const MiningSection = () => {
           totalCoinsEarned: (stats.totalCoinsEarned || 0) + finalCoins, // FIXED
         },
       }));
-
     } catch (err) {
       console.error("Error completing mining:", err);
       setError("Failed to complete mining session");
@@ -281,12 +289,11 @@ const MiningSection = () => {
   }
 
   return (
-    <div className="w-full h-full flex flex-col md:flex-row items-center md:items-start justify-center gap-10 p-6 bg-gradient-to-br from-[#251354] via-[#261547] to-[#321c64] rounded-2xl shadow-lg border border-purple-900/20 transition-all duration-300">
-      
-      {/* Error Display */}
+    <div className="w-full h-full flex flex-col gap-6 p-4 sm:p-6 bg-gradient-to-br from-[#251354] via-[#261547] to-[#321c64] rounded-2xl shadow-lg border border-purple-900/20 transition-all duration-300">
+      {/* Error Display - Make sticky/floating on top right (mobile) */}
       {error && (
-        <div className="absolute top-4 right-4 bg-red-500/20 border border-red-500 text-red-300 px-4 py-2 rounded-lg">
-          {error}
+        <div className="fixed top-4 right-4 left-4 sm:left-auto z-50 bg-red-500/20 border border-red-500 text-red-300 px-4 py-2 rounded-lg flex justify-between items-center max-w-xs mx-auto sm:max-w-full">
+          <span>{error}</span>
           <button
             onClick={() => setError(null)}
             className="ml-2 text-red-400 hover:text-red-200"
@@ -295,17 +302,24 @@ const MiningSection = () => {
           </button>
         </div>
       )}
+      {/* Header */}
+      <h2 className="text-2xl font-bold text-purple-300 mb-4 flex items-center gap-3">
+        ⛏️ Mining Dashboard
+        <span className="text-sm bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full">
+          {isMining ? "ACTIVE" : "INACTIVE"}
+        </span>
+      </h2>
 
       {/* Cube Animation */}
-      <div className="w-full md:w-1/2 flex justify-center items-center py-12 md:py-0 md:pt-16">
+      <div className="w-full flex items-center justify-center py-8 sm:py-12">
         <CubeAnimation isMining={isMining} />
       </div>
 
       {/* Stats and Actions */}
-      <div className="w-full md:w-1/2 flex flex-col justify-center gap-5">
-        {/* Stats cards */}
-        <div className="flex gap-5">
-          <div className="flex-1 bg-gradient-to-t from-[#221c34] to-[#35246b] px-6 py-5 rounded-lg shadow border border-purple-600/30 text-center transition-all duration-200 hover:scale-[1.03]">
+      <div className="w-full flex flex-col gap-4">
+        {/* Stats cards - stack on mobile */}
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1 bg-gradient-to-t from-[#221c34] to-[#35246b] px-5 py-4 rounded-lg shadow border border-purple-600/30 text-center transition-all duration-200 hover:scale-[1.03]">
             <p className="text-xs text-purple-300 uppercase tracking-wider font-semibold">
               Coins Mined
             </p>
@@ -313,7 +327,7 @@ const MiningSection = () => {
               {coinsMined.toFixed(4)}
             </p>
           </div>
-          <div className="flex-1 bg-gradient-to-t from-[#221c34] to-[#35246b] px-6 py-5 rounded-lg shadow border border-purple-600/30 text-center transition-all duration-200 hover:scale-[1.03]">
+          <div className="flex-1 bg-gradient-to-t from-[#221c34] to-[#35246b] px-5 py-4 rounded-lg shadow border border-purple-600/30 text-center transition-all duration-200 hover:scale-[1.03] mt-3 sm:mt-0">
             <p className="text-xs text-purple-300 uppercase tracking-wider font-semibold">
               USD Equivalent
             </p>
@@ -323,7 +337,8 @@ const MiningSection = () => {
           </div>
         </div>
 
-        <div className="bg-gradient-to-t from-[#221c34] to-[#312567] px-6 py-5 rounded-lg shadow border border-purple-600/30 text-center">
+        {/* Mining Rate */}
+        <div className="bg-gradient-to-t from-[#221c34] to-[#312567] px-5 py-4 rounded-lg shadow border border-purple-600/30 text-center">
           <p className="text-xs text-purple-300 uppercase tracking-wider font-semibold">
             Mining Rate
           </p>
@@ -332,8 +347,8 @@ const MiningSection = () => {
           </p>
         </div>
 
-        {/* Total Stats - FIXED: Extra safety */}
-        <div className="bg-gradient-to-t from-[#221c34] to-[#312567] px-6 py-5 rounded-lg shadow border border-purple-600/30 text-center">
+        {/* Total Stats */}
+        <div className="bg-gradient-to-t from-[#221c34] to-[#312567] px-5 py-4 rounded-lg shadow border border-purple-600/30 text-center">
           <p className="text-xs text-purple-300 uppercase tracking-wider font-semibold">
             Total Earned
           </p>
@@ -343,7 +358,7 @@ const MiningSection = () => {
         </div>
 
         {/* Mining status and action */}
-        <div className="flex flex-col items-center mt-2">
+        <div className="flex flex-col items-center mt-2 w-full">
           {isMining ? (
             <p className="text-sm text-green-400 font-semibold flex items-center mb-2 transition-all duration-300">
               ⛏ Mining in progress...&nbsp;
@@ -352,8 +367,10 @@ const MiningSection = () => {
           ) : (
             <button
               onClick={handleStartMining}
-              disabled={loading || (nextAvailable && Date.now() < nextAvailable)}
-              className={`mt-1 px-6 py-3 rounded-md font-semibold text-sm shadow-lg transition-all duration-200 flex items-center gap-2 ${
+              disabled={
+                loading || (nextAvailable && Date.now() < nextAvailable)
+              }
+              className={`mt-1 px-5 py-3 rounded-md font-semibold text-sm shadow-lg w-full transition-all duration-200 flex items-center gap-2 ${
                 loading || (nextAvailable && Date.now() < nextAvailable)
                   ? "bg-gray-500 cursor-not-allowed text-white"
                   : "bg-gradient-to-r from-pink-500 to-purple-600 hover:from-purple-400 hover:to-pink-400 text-white"
@@ -371,17 +388,18 @@ const MiningSection = () => {
           )}
         </div>
 
-        <div className="text-center mt-4">
+        {/* Referral - Make all content center and stack */}
+        <div className="text-center mt-4 w-full">
           <button
             onClick={handleShareReferral}
-            className="bg-gradient-to-r from-purple-600 to-indigo-500 hover:from-indigo-500 hover:to-purple-600 text-white px-4 py-2 rounded-md text-xs shadow font-bold transition-all duration-200"
+            className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-indigo-500 hover:from-indigo-500 hover:to-purple-600 text-white px-4 py-3 rounded-md text-xs shadow font-bold transition-all duration-200"
           >
             🔗 Share Referral Link
           </button>
           <p className="text-[11px] text-purple-300 mt-2 font-medium">
             Share your referral link to increase your mining rate!
           </p>
-          <p className="text-[10px] text-purple-400 mt-1">
+          <p className="text-[10px] text-purple-400 mt-1 break-all">
             Code: {profile.referralCode || "Loading..."}
           </p>
         </div>

@@ -247,7 +247,7 @@ export default function Friends() {
       </div>
 
       {/* Friends Grid */}
-      <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-4">
         {filteredFriends.map((friend, index) => (
           <div
             key={friend.id}
@@ -335,7 +335,7 @@ export default function Friends() {
                 {/* TODO: Implement send gift functionality */}
                 <button 
                   disabled
-                  className="w-full px-4 py-2 bg-slate-700/50 text-slate-500 rounded-lg flex items-center justify-center gap-2 cursor-not-allowed border border-slate-600/50"
+                  className="w-full px-4 py-2 bg-slate-700/50 text-white rounded-lg flex items-center justify-center gap-2 cursor-not-allowed border border-slate-600/50"
                 >
                   <FaGift />
                   Send Gift (Coming Soon)

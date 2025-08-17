@@ -163,17 +163,43 @@ export const markMiningAsStreakActivity = async (uid) => {
     const streakRef = doc(db, 'users', uid, 'streakData', today);
     const streakDoc = await getDoc(streakRef);
     
-    let activities = ['mining_completed'];
+    let activities = ['mining_started'];
     if (streakDoc.exists()) {
       const existingActivities = streakDoc.data().activities || [];
-      activities = [...new Set([...existingActivities, 'mining_completed'])];
+      // Add mining_started if not already present
+      activities = [...new Set([...existingActivities, 'mining_started'])];
     }
     
+    // Mark today as complete with mining activity
     await markTodayComplete(uid, activities);
     
     return { success: true };
   } catch (error) {
     console.error('Error marking mining as streak activity:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Also update the markTodayComplete function to handle mining completion
+export const markMiningCompletionAsStreakActivity = async (uid) => {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const streakRef = doc(db, 'users', uid, 'streakData', today);
+    const streakDoc = await getDoc(streakRef);
+    
+    let activities = ['mining_completed'];
+    if (streakDoc.exists()) {
+      const existingActivities = streakDoc.data().activities || [];
+      // Add mining_completed if not already present
+      activities = [...new Set([...existingActivities, 'mining_completed'])];
+    }
+    
+    // Mark today as complete with mining completion activity
+    await markTodayComplete(uid, activities);
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Error marking mining completion as streak activity:', error);
     return { success: false, error: error.message };
   }
 };

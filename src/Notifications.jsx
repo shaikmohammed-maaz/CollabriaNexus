@@ -1,13 +1,22 @@
 import React, { useState, useEffect } from "react";
 import styled, { keyframes } from "styled-components";
-import { FaTimes, FaBell, FaStar, FaFire, FaUsers, FaCoins, FaGift, FaTrophy } from "react-icons/fa";
+import {
+  FaTimes,
+  FaBell,
+  FaStar,
+  FaFire,
+  FaUsers,
+  FaCoins,
+  FaGift,
+  FaTrophy,
+} from "react-icons/fa";
 import dayjs from "dayjs";
-import { useAuth } from './Services/AuthContext';
-import { 
+import { useAuth } from "./Services/AuthContext";
+import {
   subscribeToNotifications,
-  dismissNotification, 
-  markNotificationAsRead
-} from './Services/notificationService';
+  dismissNotification,
+  markNotificationAsRead,
+} from "./Services/notificationService";
 
 const slideIn = keyframes`
   from {
@@ -35,7 +44,7 @@ const Container = styled.div`
   max-width: 800px;
   margin: 0 auto;
   padding: 20px;
-  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background: linear-gradient(135deg, #2d1b69 0%, #4a1e72 50%, #663399 100%);
   border-radius: 16px;
   border: 1px solid rgba(147, 51, 234, 0.3);
@@ -113,16 +122,22 @@ const NotificationsList = styled.div`
 `;
 
 const NotificationCard = styled.div`
-  background: linear-gradient(135deg, rgba(45, 27, 105, 0.8) 0%, rgba(74, 30, 114, 0.8) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(45, 27, 105, 0.8) 0%,
+    rgba(74, 30, 114, 0.8) 100%
+  );
   backdrop-filter: blur(10px);
   border-radius: 12px;
   padding: 20px;
-  border: 1px solid ${props => props.isRead ? 'rgba(147, 51, 234, 0.25)' : 'rgba(147, 51, 234, 0.5)'};
+  border: 1px solid
+    ${(props) =>
+      props.isRead ? "rgba(147, 51, 234, 0.25)" : "rgba(147, 51, 234, 0.5)"};
   position: relative;
   transition: all 0.3s ease;
   animation: ${slideIn} 0.3s ease-out;
-  opacity: ${props => props.isRead ? 0.7 : 1};
-  
+  opacity: ${(props) => (props.isRead ? 0.7 : 1)};
+
   &.removing {
     animation: ${fadeOut} 0.3s ease-out forwards;
   }
@@ -131,7 +146,11 @@ const NotificationCard = styled.div`
     transform: translateX(4px);
     border-color: rgba(147, 51, 234, 0.5);
     box-shadow: 0 4px 20px rgba(147, 51, 234, 0.2);
-    background: linear-gradient(135deg, rgba(45, 27, 105, 0.9) 0%, rgba(74, 30, 114, 0.9) 100%);
+    background: linear-gradient(
+      135deg,
+      rgba(45, 27, 105, 0.9) 0%,
+      rgba(74, 30, 114, 0.9) 100%
+    );
     opacity: 1;
   }
 
@@ -147,10 +166,14 @@ const NotificationContent = styled.div`
 `;
 
 const IconWrapper = styled.div`
-  background: linear-gradient(135deg, rgba(147, 51, 234, 0.3), rgba(168, 85, 247, 0.3));
+  background: linear-gradient(
+    135deg,
+    rgba(147, 51, 234, 0.3),
+    rgba(168, 85, 247, 0.3)
+  );
   border-radius: 8px;
   padding: 8px;
-  color: ${props => props.color || '#a855f7'};
+  color: ${(props) => props.color || "#a855f7"};
   font-size: 1.1rem;
   flex-shrink: 0;
   border: 1px solid rgba(147, 51, 234, 0.2);
@@ -199,7 +222,10 @@ const ActionButtons = styled.div`
 `;
 
 const ActionButton = styled.button`
-  background: ${props => props.primary ? 'linear-gradient(135deg, #9333ea, #a855f7)' : 'rgba(147, 51, 234, 0.2)'};
+  background: ${(props) =>
+    props.primary
+      ? "linear-gradient(135deg, #9333ea, #a855f7)"
+      : "rgba(147, 51, 234, 0.2)"};
   color: #ffffff;
   border: none;
   padding: 6px 12px;
@@ -217,17 +243,17 @@ const ActionButton = styled.button`
 
 const getNotificationIcon = (type) => {
   switch (type) {
-    case 'mining_completed':
+    case "mining_completed":
       return <FaCoins />;
-    case 'badge_earned':
+    case "badge_earned":
       return <FaTrophy />;
-    case 'referral_success':
+    case "referral_success":
       return <FaUsers />;
-    case 'streak_milestone':
+    case "streak_milestone":
       return <FaFire />;
-    case 'welcome_bonus':
+    case "welcome_bonus":
       return <FaGift />;
-    case 'level_up':
+    case "level_up":
       return <FaStar />;
     default:
       return <FaBell />;
@@ -236,20 +262,20 @@ const getNotificationIcon = (type) => {
 
 const getNotificationColor = (type) => {
   switch (type) {
-    case 'mining_completed':
-      return '#fbbf24';
-    case 'badge_earned':
-      return '#8b5cf6';
-    case 'referral_success':
-      return '#10b981';
-    case 'streak_milestone':
-      return '#f97316';
-    case 'welcome_bonus':
-      return '#06b6d4';
-    case 'level_up':
-      return '#f59e0b';
+    case "mining_completed":
+      return "#fbbf24";
+    case "badge_earned":
+      return "#8b5cf6";
+    case "referral_success":
+      return "#10b981";
+    case "streak_milestone":
+      return "#f97316";
+    case "welcome_bonus":
+      return "#06b6d4";
+    case "level_up":
+      return "#f59e0b";
     default:
-      return '#a855f7';
+      return "#a855f7";
   }
 };
 
@@ -270,15 +296,23 @@ export default function Notifications() {
     const loadNotifications = async () => {
       try {
         setLoading(true);
-        
-        unsubscribe = subscribeToNotifications(currentUser.uid, (updatedNotifications) => {
-          setNotifications(updatedNotifications);
-          setLoading(false);
-        });
 
+        unsubscribe = subscribeToNotifications(
+          currentUser.uid,
+          (updatedNotifications) => {
+            console.log("Notifications received:", updatedNotifications); // DEBUG
+            setNotifications(updatedNotifications);
+            setLoading(false); // This should execute when callback is called
+          }
+        );
+
+        // ADD: Set a timeout to stop loading even if no notifications
+        setTimeout(() => {
+          setLoading(false);
+        }, 5000); // 5 second timeout
       } catch (err) {
-        console.error('Error loading notifications:', err);
-        setError('Failed to load notifications');
+        console.error("Error loading notifications:", err);
+        setError("Failed to load notifications");
         setLoading(false);
       }
     };
@@ -291,23 +325,22 @@ export default function Notifications() {
       }
     };
   }, [currentUser]);
-
   const handleDismiss = async (notificationId) => {
     const card = document.querySelector(`[data-id="${notificationId}"]`);
     if (card) {
-      card.classList.add('removing');
-      
+      card.classList.add("removing");
+
       try {
         await dismissNotification(currentUser.uid, notificationId);
-        
+
         setTimeout(() => {
-          setNotifications((prev) => 
+          setNotifications((prev) =>
             prev.filter((notification) => notification.id !== notificationId)
           );
         }, 300);
       } catch (err) {
-        console.error('Error dismissing notification:', err);
-        card.classList.remove('removing');
+        console.error("Error dismissing notification:", err);
+        card.classList.remove("removing");
       }
     }
   };
@@ -315,7 +348,7 @@ export default function Notifications() {
   const handleMarkAsRead = async (notificationId) => {
     try {
       await markNotificationAsRead(currentUser.uid, notificationId);
-      
+
       setNotifications((prev) =>
         prev.map((notification) =>
           notification.id === notificationId
@@ -324,11 +357,13 @@ export default function Notifications() {
         )
       );
     } catch (err) {
-      console.error('Error marking notification as read:', err);
+      console.error("Error marking notification as read:", err);
     }
   };
 
-  const unreadCount = notifications.filter(n => !n.isRead && !n.isDismissed).length;
+  const unreadCount = notifications.filter(
+    (n) => !n.isRead && !n.isDismissed
+  ).length;
 
   if (!currentUser) {
     return (
@@ -356,7 +391,7 @@ export default function Notifications() {
           </Title>
         </Header>
         <LoadingState>
-          <div style={{ textAlign: 'center' }}>
+          <div style={{ textAlign: "center" }}>
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-400 mx-auto mb-4"></div>
             <p>Loading notifications...</p>
           </div>
@@ -376,7 +411,13 @@ export default function Notifications() {
         </Header>
         <EmptyState>
           <EmptyText>Error loading notifications</EmptyText>
-          <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.9rem', marginTop: '8px' }}>
+          <p
+            style={{
+              color: "rgba(255, 255, 255, 0.6)",
+              fontSize: "0.9rem",
+              marginTop: "8px",
+            }}
+          >
             {error}
           </p>
         </EmptyState>
@@ -398,15 +439,21 @@ export default function Notifications() {
         <EmptyState>
           <EmptyIcon>🎉</EmptyIcon>
           <EmptyText>All caught up!</EmptyText>
-          <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.9rem', marginTop: '8px' }}>
+          <p
+            style={{
+              color: "rgba(255, 255, 255, 0.6)",
+              fontSize: "0.9rem",
+              marginTop: "8px",
+            }}
+          >
             No new notifications right now
           </p>
         </EmptyState>
       ) : (
         <NotificationsList>
           {notifications.map((notification) => (
-            <NotificationCard 
-              key={notification.id} 
+            <NotificationCard
+              key={notification.id}
               data-id={notification.id}
               isRead={notification.isRead}
             >
@@ -417,13 +464,17 @@ export default function Notifications() {
                 <TextContent>
                   <Message>{notification.message}</Message>
                   <TimeStamp>
-                    {dayjs(notification.timestamp?.toDate ? notification.timestamp.toDate() : notification.timestamp).format("MMM D, hh:mm A")}
+                    {dayjs(
+                      notification.timestamp?.toDate
+                        ? notification.timestamp.toDate()
+                        : notification.timestamp
+                    ).format("MMM D, hh:mm A")}
                   </TimeStamp>
-                  
+
                   {!notification.isRead && (
                     <ActionButtons>
-                      <ActionButton 
-                        primary 
+                      <ActionButton
+                        primary
                         onClick={() => handleMarkAsRead(notification.id)}
                       >
                         Mark as Read

@@ -58,7 +58,7 @@ const AboutUs = () => {
   return (
     <div className="bg-gray-900 text-white min-h-screen">
       {/* Hero Section */}
-      <section className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+      <section className="min-h-screen pt-24 flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
         <div className="w-full px-6 sm:px-8 lg:px-12">
           <div className="text-center max-w-5xl mx-auto">
             <div className="mb-6">
