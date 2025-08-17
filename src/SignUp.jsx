@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import { Eye, EyeOff, Users, BookOpen, Award, Globe } from "lucide-react";
 import LoginImg from './assets/LoginImg.png';
+import { useNavigate } from 'react-router-dom';
+import { signUp } from './Services/authService'; 
 
 export default function SignUp({ onSignUp }) {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -18,37 +21,20 @@ export default function SignUp({ onSignUp }) {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
-    }
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
   };
 
   const validateForm = () => {
     const newErrors = {};
-    
     if (!formData.username.trim()) newErrors.username = 'Username is required';
     else if (formData.username.length < 3) newErrors.username = 'Username must be at least 3 characters';
-    
     if (!formData.email.trim()) newErrors.email = 'Email is required';
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Please enter a valid email';
-    
     if (!formData.password) newErrors.password = 'Password is required';
     else if (formData.password.length < 8) newErrors.password = 'Password must be at least 8 characters';
-    
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
-    
+    if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
     if (!accepted) newErrors.terms = 'You must accept the terms and privacy policy';
-    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -56,16 +42,22 @@ export default function SignUp({ onSignUp }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-    
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      console.log('Sign up data:', formData);
-      setIsLoading(false);
-      onSignUp(); 
+    const result = await signUp(formData.email, formData.password, {
+      username: formData.username,
+      email: formData.email,
+      name: formData.username,
+      referralCode: formData.referralCode
+    });
+    setIsLoading(false);
+    if (result.success) {
+      onSignUp && onSignUp();
       navigate("/");
-    }, 2000);
+    } else {
+      setErrors({ general: result.error });
+    }
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8 md:py-16 pt-20 relative overflow-hidden">

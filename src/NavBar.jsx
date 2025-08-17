@@ -43,12 +43,6 @@ export default function NavBar() {
             </Link>
           </li>
           <li>
-            {/* <a href="/contact" className="hover:text-violet-300 transition">Contact Us</a> */}
-            <Link to="/contact" className="hover:text-violet-300 transition">
-              Contact Us
-            </Link>
-          </li>
-          <li>
             <Link to="/dashboard" className="hover:text-violet-300 transition">
               Dashboard
             </Link>
@@ -65,7 +59,6 @@ export default function NavBar() {
     { to: "/", label: "Home", icon: <FaHome/> },
     { to: "/blog", label: "Blogs", icon: <FaBlog/> },
     { to: "/about", label: "About Us", icon: <FaParagraph/> },
-    { to: "/contact", label: "Contact Us", icon: <FaPhoneAlt/> },
     { to: "/dashboard", label: "Dashboard", icon: <FaChartBar/> },
   ].map((item, idx) => (
     <li key={idx} className="border-b border-violet-300/10 last:border-none">

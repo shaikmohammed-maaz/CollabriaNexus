@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
 import LoginImg from './assets/LoginImg.png';
+import { useNavigate } from 'react-router-dom';
+import { signIn } from './Services/authService'; // Adjust the import path as needed
 
 export default function Login({ onLogin }) {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
+const navigate = useNavigate();
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState({});
@@ -14,27 +14,15 @@ export default function Login({ onLogin }) {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
-    }
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
   };
 
   const validateForm = () => {
     const newErrors = {};
-    
     if (!formData.email.trim()) newErrors.email = 'Email is required';
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Please enter a valid email';
-    
     if (!formData.password) newErrors.password = 'Password is required';
-    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -42,18 +30,17 @@ export default function Login({ onLogin }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-    
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      onLogin();
-      navigate("/");
-    }, 2000);
-  };
 
-  const handleGoogleLogin = () => {
-    console.log('Google login initiated');
+    const result = await signIn(formData.email, formData.password);
+    setIsLoading(false);
+
+    if (result.success) {
+      onLogin && onLogin();
+      navigate("/");
+    } else {
+      setErrors({ general: result.error });
+    }
   };
 
   return (
