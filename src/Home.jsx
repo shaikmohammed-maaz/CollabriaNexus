@@ -1,49 +1,66 @@
-import React, { useState } from 'react';
-import { FaRocket, FaChartBar, FaUserAstronaut, FaCoins, FaBrain, FaLightbulb, FaGlobe, FaHandshake, FaUsers, FaArrowRight, FaPlay, FaStar, FaBookOpen, FaNewspaper, FaSearch, FaShieldAlt } from "react-icons/fa";
-
-
+import React, { useState } from "react";
+import {
+  FaRocket,
+  FaChartBar,
+  FaUserAstronaut,
+  FaCoins,
+  FaBrain,
+  FaLightbulb,
+  FaGlobe,
+  FaHandshake,
+  FaUsers,
+  FaArrowRight,
+  FaPlay,
+  FaStar,
+  FaBookOpen,
+  FaNewspaper,
+  FaSearch,
+  FaShieldAlt,
+} from "react-icons/fa";
 
 const Home = () => {
-  const [activeTab, setActiveTab] = useState('learn');
+  const [activeTab, setActiveTab] = useState("learn");
 
   const platformFeatures = [
     {
       icon: FaBookOpen,
       title: "Curated Knowledge Base",
-      description: "Access verified articles, company insights, and proven strategies from industry leaders.",
-      category: "learn"
+      description:
+        "Access verified articles, company insights, and proven strategies from industry leaders.",
+      category: "learn",
     },
     {
       icon: FaBrain,
       title: "Expert Mentorship",
-      description: "Connect directly with professionals and get personalized guidance for your career growth.",
-      category: "connect"
+      description:
+        "Connect directly with professionals and get personalized guidance for your career growth.",
+      category: "connect",
     },
     {
       icon: FaNewspaper,
       title: "Industry News & Trends",
-      description: "Stay updated with the latest industry developments and breakthrough innovations.",
-      category: "discover"
+      description:
+        "Stay updated with the latest industry developments and breakthrough innovations.",
+      category: "discover",
     },
     {
       icon: FaHandshake,
       title: "Project Collaboration",
-      description: "Join meaningful projects, contribute your skills, and build your professional network.",
-      category: "grow"
-    }
+      description:
+        "Join meaningful projects, contribute your skills, and build your professional network.",
+      category: "grow",
+    },
   ];
 
   const tabs = [
-    { id: 'learn', label: 'Learn', icon: FaBookOpen },
-    { id: 'connect', label: 'Connect', icon: FaUsers },
-    { id: 'discover', label: 'Discover', icon: FaSearch },
-    { id: 'grow', label: 'Grow', icon: FaArrowRight }
+    { id: "learn", label: "Learn", icon: FaBookOpen },
+    { id: "connect", label: "Connect", icon: FaUsers },
+    { id: "discover", label: "Discover", icon: FaSearch },
+    { id: "grow", label: "Grow", icon: FaArrowRight },
   ];
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-
-      
       {/* Hero Section */}
       <section className="pt-24 pb-16 bg-gradient-to-b from-gray-900 to-gray-800">
         <div className="px-6 lg:px-8 w-full max-w-6xl mx-auto">
@@ -53,17 +70,18 @@ const Home = () => {
                 🚀 LAUNCHING SOON
               </span>
             </div>
-            
+
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-8 leading-tight">
               Your Gateway to
               <br />
-              <span className="text-purple-400">Global Knowledge</span> & 
+              <span className="text-purple-400">Global Knowledge</span> &
               <span className="text-pink-400"> Expert Networks</span>
             </h1>
-            
+
             <p className="text-xl text-gray-300 mb-12 max-w-3xl mx-auto">
-              Connect with industry experts, access verified insights, and accelerate your 
-              professional journey through authentic knowledge sharing and meaningful collaboration.
+              Connect with industry experts, access verified insights, and
+              accelerate your professional journey through authentic knowledge
+              sharing and meaningful collaboration.
             </p>
 
             <div className="flex flex-col sm:flex-row justify-center gap-4 mb-12">
@@ -84,16 +102,22 @@ const Home = () => {
             {/* Trust Indicators */}
             <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto text-center">
               <div>
-                <div className="text-2xl font-bold text-purple-400 mb-1">100%</div>
+                <div className="text-2xl font-bold text-purple-400 mb-1">
+                  100%
+                </div>
                 <div className="text-sm text-gray-400">Verified Content</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-pink-400 mb-1">24/7</div>
+                <div className="text-2xl font-bold text-pink-400 mb-1">
+                  24/7
+                </div>
                 <div className="text-sm text-gray-400">Global Access</div>
               </div>
               <div>
                 <div className="text-2xl font-bold text-cyan-400 mb-1">∞</div>
-                <div className="text-sm text-gray-400">Learning Opportunities</div>
+                <div className="text-sm text-gray-400">
+                  Learning Opportunities
+                </div>
               </div>
             </div>
           </div>
@@ -114,16 +138,18 @@ const Home = () => {
 
           {/* Tab Navigation */}
           <div className="flex justify-center mb-12">
-            <div className="bg-gray-900 p-2 rounded-xl inline-flex">
+            <div className="bg-gray-900 p-2 rounded-xl inline-flex w-full max-w-full overflow-x-auto flex-wrap space-x-2 scrollbar-hide">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`px-6 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2 ${
-                    activeTab === tab.id
-                      ? 'bg-purple-600 text-white'
-                      : 'text-gray-400 hover:text-white'
-                  }`}
+                  className={`min-w-[100px] px-6 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2 whitespace-nowrap 
+          ${
+            activeTab === tab.id
+              ? "bg-purple-600 text-white"
+              : "text-gray-400 hover:text-white"
+          }`}
+                  style={{ flex: "0 0 auto" }}
                 >
                   <tab.icon className="text-lg" />
                   {tab.label}
@@ -136,7 +162,7 @@ const Home = () => {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
               {platformFeatures
-                .filter(feature => feature.category === activeTab)
+                .filter((feature) => feature.category === activeTab)
                 .map((feature, index) => (
                   <div key={index}>
                     <div className="flex items-center gap-4 mb-4">
@@ -154,12 +180,14 @@ const Home = () => {
 
             <div className="bg-gray-900 border border-gray-700 rounded-2xl p-8">
               <div className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 rounded-xl p-6 mb-6">
-                <h4 className="text-lg font-semibold mb-2 text-center">Coming Soon</h4>
+                <h4 className="text-lg font-semibold mb-2 text-center">
+                  Coming Soon
+                </h4>
                 <div className="text-center text-gray-300">
                   Interactive demo and preview will be available here
                 </div>
               </div>
-              
+
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
                   <span className="text-gray-300">Platform Features</span>
@@ -187,7 +215,8 @@ const Home = () => {
               Why Choose CollabriaNexus?
             </h2>
             <p className="text-xl text-gray-300">
-              Built for professionals who value authentic knowledge and meaningful connections
+              Built for professionals who value authentic knowledge and
+              meaningful connections
             </p>
           </div>
 
@@ -198,7 +227,8 @@ const Home = () => {
               </div>
               <h3 className="text-xl font-bold mb-3">Verified & Authentic</h3>
               <p className="text-gray-300">
-                All content and expert profiles are thoroughly verified to ensure authenticity and quality.
+                All content and expert profiles are thoroughly verified to
+                ensure authenticity and quality.
               </p>
             </div>
 
@@ -208,7 +238,8 @@ const Home = () => {
               </div>
               <h3 className="text-xl font-bold mb-3">Global Community</h3>
               <p className="text-gray-300">
-                Connect with professionals and experts from around the world in your field of interest.
+                Connect with professionals and experts from around the world in
+                your field of interest.
               </p>
             </div>
 
@@ -218,7 +249,8 @@ const Home = () => {
               </div>
               <h3 className="text-xl font-bold mb-3">Career Growth</h3>
               <p className="text-gray-300">
-                Access opportunities for skill development, mentorship, and collaborative projects.
+                Access opportunities for skill development, mentorship, and
+                collaborative projects.
               </p>
             </div>
           </div>
@@ -232,10 +264,11 @@ const Home = () => {
             Be Among the First
           </h2>
           <p className="text-xl text-gray-200 mb-8 leading-relaxed">
-            Join our exclusive waitlist and get early access to the platform that will transform 
-            how professionals connect, learn, and grow together.
+            Join our exclusive waitlist and get early access to the platform
+            that will transform how professionals connect, learn, and grow
+            together.
           </p>
-          
+
           <div className="bg-white/10 backdrop-blur border border-white/20 rounded-2xl p-8 mb-8">
             <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
               <input
