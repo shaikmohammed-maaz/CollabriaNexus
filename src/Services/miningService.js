@@ -5,6 +5,7 @@ import {
   collection,
   serverTimestamp,
   onSnapshot,
+  getDoc,
 } from "firebase/firestore";
 import { db } from "../firebase/config";
 import { createMiningCompletionNotification } from "./notificationService";
