@@ -4,7 +4,7 @@ import Notifications from "./Notifications";
 import Achievements from "./Achievements";
 import MiningSection from "./MiningDashboard";
 import Logo from "../public/logo.png";
-
+import BadgeQuests from "./BadgeQuests";
 import {
   FaHome,
   FaUserFriends,
@@ -31,7 +31,6 @@ import {
   FaCog,
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import BadgeQuests from "./BadgeQuests";
 import { useAuth } from "./Services/AuthContext";
 
 export default function Dashboard() {
@@ -123,6 +122,7 @@ export default function Dashboard() {
       )}
 
       {/* Sidebar */}
+      
 
 <aside
   className={`
@@ -241,84 +241,36 @@ export default function Dashboard() {
   <div className="w-full px-6 md:px-3 my-6">
     <div className="h-px bg-gradient-to-r from-transparent via-violet-500/30 to-transparent" />
   </div>
-  
-  {/* Profile Section */}
-  <div className="w-full px-6 md:px-3">
-    <Link to="/profile">
-      <div className="group relative flex md:justify-center items-center p-4 rounded-2xl 
-                     hover:bg-gradient-to-r hover:from-violet-600/20 hover:to-purple-600/20 
-                     transition-all duration-500 border border-transparent 
-                     hover:border-violet-400/40 hover:shadow-lg hover:shadow-violet-500/20
-                     transform hover:scale-105 cursor-pointer">
-        <div className="relative">
-          <img
-            src={getUserAvatar()}
-            alt="Profile"
-            className="w-12 h-12 rounded-full border-2 border-violet-400/60 
-                       shadow-lg group-hover:shadow-violet-400/60 
-                       transition-all duration-500 group-hover:border-violet-300
-                       group-hover:scale-110 object-cover"
-          />
-          {/* Online indicator with enhanced animation */}
-          <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-400 rounded-full 
-                         border-2 border-slate-800 shadow-lg shadow-emerald-400/50">
-            <div className="absolute inset-0 bg-emerald-400 rounded-full animate-ping opacity-75" />
-          </div>
-        </div>
-        
-        <div className="ml-4 md:hidden flex-1">
-          <p className="text-white font-semibold text-lg leading-tight
-                       bg-gradient-to-r from-white to-violet-200 bg-clip-text text-transparent">
-            {profile.username}
-          </p>
-          <p className="text-violet-300 text-sm font-medium flex items-center mt-1">
-            {stats.isVip ? (
-              <>
-                <span className="w-2 h-2 bg-yellow-400 rounded-full mr-2 animate-pulse" />
-                VIP Member
-              </>
-            ) : (
-              <>
-                <span className="w-2 h-2 bg-violet-400 rounded-full mr-2" />
-                Standard User
-              </>
-            )}
-          </p>
-        </div>
-        
-        {stats.isVip && (
-          <FaCrown className="ml-auto md:hidden text-yellow-400 text-xl 
-                            transition-all duration-300 group-hover:text-yellow-300 
-                            group-hover:rotate-12 group-hover:scale-110
-                            drop-shadow-lg" />
-        )}
-
-        {/* Desktop VIP indicator */}
-        {stats.isVip && (
-          <div className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-400/20 rounded-full 
-                         border border-yellow-400/60 hidden md:flex items-center justify-center
-                         animate-pulse">
-            <FaCrown className="text-yellow-400 text-xs" />
-          </div>
-        )}
-        
-        {/* Profile tooltip for desktop */}
-        <div className="absolute left-20 bg-slate-900/95 backdrop-blur-md text-white 
-                       px-4 py-3 rounded-xl text-sm font-medium
-                       opacity-0 group-hover:opacity-100 transition-all duration-300 
-                       pointer-events-none hidden md:block 
-                       border border-violet-500/30 shadow-xl shadow-violet-500/10 z-50
-                       min-w-max">
-          <div className="font-semibold">{profile.username}</div>
-          <div className="text-xs text-violet-300 mt-1">
-            {stats.isVip ? '👑 VIP Member' : 'Standard User'}
-          </div>
-          <div className="absolute left-0 top-1/2 transform -translate-x-1 -translate-y-1/2 
-                         w-2 h-2 bg-slate-900 rotate-45 border-l border-b border-violet-500/30" />
-        </div>
+{/* Profile Section - Ultra Minimal */}
+<div className="w-full px-6 md:px-3">
+  <Link to="/profile">
+    <div className="group flex md:justify-center items-center p-2 rounded-lg 
+                   hover:bg-slate-800/40 transition-all duration-200 cursor-pointer">
+      
+      <div className="relative">
+        <img
+          src={getUserAvatar()}
+          alt={profile.username}
+          className="w-10 h-10 rounded-full border border-slate-600 
+                     group-hover:border-violet-400 transition-colors object-cover"
+        />
+        <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full 
+                       border border-slate-800"></div>
       </div>
-    </Link>
-  </div>
+      
+      <div className="ml-3 md:hidden">
+        <p className="text-white font-medium text-sm">{profile.username}</p>
+        {stats.isVip && (
+          <p className="text-yellow-400 text-xs flex items-center">
+            <FaCrown className="w-3 h-3 mr-1" />
+            VIP
+          </p>
+        )}
+      </div>
+    </div>
+  </Link>
+</div>
+
 </aside>
 
 <style jsx>{`
@@ -437,15 +389,9 @@ export default function Dashboard() {
             </div>
 
             {/* Streak Grid */}
-            <div className="group bg-slate-800/70 backdrop-blur-xl border border-violet-500/30 rounded-2xl p-6 shadow-xl hover:shadow-2xl hover:shadow-violet-500/20 transition-all duration-500 hover:bg-slate-800/80 h-[350px] relative overflow-hidden">
+            <div className="group bg-slate-800/70 backdrop-blur-xl border border-violet-500/30 rounded-2xl p-6 shadow-xl hover:shadow-2xl hover:shadow-violet-500/20 transition-all duration-500 hover:bg-slate-800/80 h-[365px] relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-r from-orange-600/5 to-red-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl" />
               <div className="relative z-10 h-full">
-                {/* <h2 className="text-xl font-bold text-violet-300 mb-4 flex items-center gap-3">
-                  🔥 Your Streak
-                  <div className="px-2 py-1 bg-orange-500/20 border border-orange-500/30 rounded-full text-xs text-orange-400 font-semibold">
-                    HOT
-                  </div>
-                </h2> */}
                 <StreakGrid />
               </div>
             </div>

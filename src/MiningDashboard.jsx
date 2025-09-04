@@ -25,6 +25,46 @@ const MiningSection = () => {
   const intervalRef = useRef(null);
   const unsubscribeRef = useRef(null);
 
+  // --- Helpers ---
+  const calculateElapsedTime = (startTimestamp) => {
+    const start = new Date(
+      startTimestamp.seconds ? startTimestamp.seconds * 1000 : startTimestamp
+    );
+    const now = Date.now();
+    return Math.floor((now - start.getTime()) / 60000); // minutes
+  };
+
+  const calculateMinedCoins = (elapsedMinutes, miningRate) => {
+    return (elapsedMinutes / 1440) * miningRate;
+  };
+
+  const startMiningAnimation = (initialCoins, miningRate) => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+
+    let coins = initialCoins;
+    intervalRef.current = setInterval(() => {
+      coins += miningRate / 86400; // per second
+      setCoinsMined(coins);
+      setUsdEquivalent(coins * 0.12);
+    }, 1000);
+  };
+
+  const resumeMiningSession = async (startTimestamp) => {
+    const elapsedMinutes = calculateElapsedTime(startTimestamp);
+    const miningRate = mining.miningRate || 3.0;
+
+    if (elapsedMinutes >= 1440) {
+      await handleCompleteMining();
+      return;
+    }
+
+    const coins = calculateMinedCoins(elapsedMinutes, miningRate);
+    setCoinsMined(coins);
+    setUsdEquivalent(coins * 0.12);
+
+    startMiningAnimation(coins, miningRate);
+  };
+
   // FIXED: More robust safe property access
   const stats =
     userProfile && userProfile.stats
@@ -114,6 +154,7 @@ const MiningSection = () => {
       );
 
       // If mining was in progress, resume the interval
+      // In MiningSection.jsx - Replace the problematic section with:
       if (miningData.isMining && miningData.lastMiningStart) {
         const startTime = new Date(
           miningData.lastMiningStart.seconds
@@ -121,11 +162,11 @@ const MiningSection = () => {
             : miningData.lastMiningStart
         );
         const elapsed = Date.now() - startTime.getTime();
+
         if (elapsed < ONE_DAY_MS) {
-          resumeMining(startTime);
+          resumeMiningSession(miningData.lastMiningStart);
         } else {
-          // Mining session expired, complete it
-          handleCompleteMining(DAILY_REWARD);
+          handleCompleteMining();
         }
       }
     }
@@ -140,30 +181,27 @@ const MiningSection = () => {
     };
   }, [currentUser, userProfile]);
 
-  const resumeMining = (startTime) => {
-    const ratePerMs = DAILY_REWARD / ONE_DAY_MS;
+  const getServerTime = async () => {
+    // Use Firestore serverTimestamp roundtrip to get server time
+    const serverTimeDoc = await addDoc(collection(db, "serverTime"), {
+      ts: serverTime(),
+    });
+    const snap = await getDoc(serverTimeDoc);
+    const serverTime = snap.data().ts.toDate();
+    return serverTime;
+  };
 
-    intervalRef.current = setInterval(async () => {
-      const elapsedMs = Date.now() - startTime.getTime();
-
-      if (elapsedMs >= ONE_DAY_MS) {
-        // Mining session completed
-        clearInterval(intervalRef.current);
-        await handleCompleteMining(DAILY_REWARD);
-        return;
-      }
-
-      const mined = elapsedMs * ratePerMs;
-
-      // Update Firebase every 10 seconds to reduce writes
-      if (Math.floor(elapsedMs / 1000) % 10 === 0) {
-        await updateMiningProgress(currentUser.uid, mined);
-      }
-
-      // Update local state every second
-      setCoinsMined(parseFloat(mined.toFixed(6)));
-      setUsdEquivalent(parseFloat((mined * 0.12).toFixed(4)));
-    }, 1000);
+  const resumeMining = async (startTime) => {
+    const serverNow = await getServerTime();
+    const elapsedMs = serverNow - startTime.getTime();
+    const miningRate = mining.miningRate || 3.0;
+    const coins = Math.max(
+      0,
+      Math.min((elapsedMs / ONE_DAY_MS) * miningRate, miningRate)
+    );
+    setCoinsMined(parseFloat(coins.toFixed(4)));
+    setUsdEquivalent(parseFloat((coins * 0.12).toFixed(4)));
+    // ...existing interval logic if you want live updates...
   };
 
   const handleStartMining = async () => {
@@ -208,45 +246,33 @@ const MiningSection = () => {
     setLoading(false);
   };
 
-  const handleCompleteMining = async (finalCoins) => {
+  const handleCompleteMining = async () => {
     if (!currentUser) return;
-
     try {
-      // Complete mining session
-      await completeMiningSession(currentUser.uid, finalCoins);
-
-      // Update user stats - FIXED: Use safe values
-      await updateUserStats(currentUser.uid, {
-        "stats.coinsEarned": finalCoins,
-        "stats.totalCoinsEarned": (stats.totalCoinsEarned || 0) + finalCoins, // FIXED
-        "mining.totalMiningSessions": (mining.totalMiningSessions || 0) + 1, // FIXED
-      });
-
-      // CREATE NOTIFICATION
-      await createMiningCompletionNotification(currentUser.uid, finalCoins);
-
-      // Update local state
-      setIsMining(false);
-      setNextAvailable(null);
-      setCoinsMined(finalCoins);
-
-      // Update local user profile - FIXED: Use safe values
-      setUserProfile((prev) => ({
-        ...prev,
-        mining: {
-          ...mining,
-          isMining: false,
-          nextAvailable: null,
-          totalMiningSessions: (mining.totalMiningSessions || 0) + 1,
-        },
-        stats: {
-          ...stats,
-          coinsEarned: finalCoins,
-          totalCoinsEarned: (stats.totalCoinsEarned || 0) + finalCoins, // FIXED
-        },
-      }));
+      const result = await completeMiningSession(currentUser.uid);
+      if (result.success) {
+        setIsMining(false);
+        setNextAvailable(null);
+        setCoinsMined(result.coinsEarned);
+        setUserProfile((prev) => ({
+          ...prev,
+          mining: {
+            ...mining,
+            isMining: false,
+            nextAvailable: null,
+            totalMiningSessions: (mining.totalMiningSessions || 0) + 1,
+          },
+          stats: {
+            ...stats,
+            coinsEarned: (stats.coinsEarned || 0) + result.coinsEarned,
+            totalCoinsEarned:
+              (stats.totalCoinsEarned || 0) + result.coinsEarned,
+          },
+        }));
+      } else {
+        setError(result.error);
+      }
     } catch (err) {
-      console.error("Error completing mining:", err);
       setError("Failed to complete mining session");
     }
   };
@@ -270,7 +296,7 @@ const MiningSection = () => {
       // Safe access
       const referralLink = `${window.location.origin}/signup?ref=${profile.referralCode}`;
       navigator.clipboard.writeText(referralLink);
-      alert("Referral link copied to clipboard! 🚀");
+      alert("Referral link copied to clipboard! ðŸš€");
     } else {
       alert("Referral code not available yet. Please try again in a moment.");
     }
@@ -298,13 +324,13 @@ const MiningSection = () => {
             onClick={() => setError(null)}
             className="ml-2 text-red-400 hover:text-red-200"
           >
-            ×
+            X
           </button>
         </div>
       )}
       {/* Header */}
       <h2 className="text-2xl font-bold text-purple-300 mb-4 flex items-center gap-3">
-        ⛏️ Mining Dashboard
+        Mining Dashboard
         <span className="text-sm bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full">
           {isMining ? "ACTIVE" : "INACTIVE"}
         </span>
@@ -361,7 +387,7 @@ const MiningSection = () => {
         <div className="flex flex-col items-center mt-2 w-full">
           {isMining ? (
             <p className="text-sm text-green-400 font-semibold flex items-center mb-2 transition-all duration-300">
-              ⛏ Mining in progress...&nbsp;
+              Mining in progress...&nbsp;
               <span className="text-purple-300">{formatTimeRemaining()}</span>
             </p>
           ) : (
@@ -392,16 +418,24 @@ const MiningSection = () => {
         <div className="text-center mt-4 w-full">
           <button
             onClick={handleShareReferral}
-            className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-indigo-500 hover:from-indigo-500 hover:to-purple-600 text-white px-4 py-3 rounded-md text-xs shadow font-bold transition-all duration-200"
+            className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-indigo-500 hover:from-indigo-500 hover:to-purple-600 text-white px-4 py-3 rounded-md shadow-md transition-all duration-200 flex items-center justify-center gap-2"
           >
-            🔗 Share Referral Link
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            Share Referral Link
           </button>
-          <p className="text-[11px] text-purple-300 mt-2 font-medium">
-            Share your referral link to increase your mining rate!
-          </p>
-          <p className="text-[10px] text-purple-400 mt-1 break-all">
-            Code: {profile.referralCode || "Loading..."}
-          </p>
         </div>
       </div>
     </div>

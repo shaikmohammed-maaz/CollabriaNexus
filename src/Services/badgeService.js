@@ -1,7 +1,7 @@
-import { 
-  collection, 
+import {
+  collection,
   doc,
-  getDocs, 
+  getDocs,
   getDoc,
   updateDoc,
   onSnapshot,
@@ -11,7 +11,10 @@ import {
   writeBatch
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
-import { createBadgeEarnedNotification } from './notificationService';
+import { createBadgeEarnedNotification,
+  createTaskCompletionNotification,
+  createQuestProgressNotification  } from './notificationService';
+
 
 // Badge templates - these are the initial badges every user gets
 const badgeDefinitions = [
@@ -24,12 +27,9 @@ const badgeDefinitions = [
     bgGradient: 'from-blue-600/20 to-cyan-600/20',
     borderColor: 'border-blue-500/30',
     tasks: [
-      { id: 1, text: "Complete profile setup", completed: true },
+      { id: 1, text: "Complete profile setup", completed: false },
       { id: 2, text: "Start your first mining session", completed: false },
-      { id: 3, text: "Join the community", completed: false },
-      { id: 4, text: "Share your referral code", completed: false },
-      { id: 5, text: "Complete first goal", completed: false },
-      { id: 6, text: "Add a profile picture", completed: false },
+      { id: 3, text: "Add a profile picture", completed: false },
     ]
   },
   {
@@ -60,10 +60,7 @@ const badgeDefinitions = [
     tasks: [
       { id: 1, text: "Refer your first friend", completed: false },
       { id: 2, text: "Get 3 successful referrals", completed: false },
-      { id: 3, text: "Connect with 5 friends", completed: false },
-      { id: 4, text: "Share achievement on social media", completed: false },
-      { id: 5, text: "Join a team challenge", completed: false },
-      { id: 6, text: "Help a friend reach their goal", completed: false },
+      { id: 3, text: "Get 5 successful referrals", completed: false },
     ]
   },
   {
@@ -77,27 +74,7 @@ const badgeDefinitions = [
     tasks: [
       { id: 1, text: "Complete 10 mining sessions", completed: false },
       { id: 2, text: "Mine for 100 total hours", completed: false },
-      { id: 3, text: "Achieve optimal mining efficiency", completed: false },
-      { id: 4, text: "Discover rare mining bonus", completed: false },
-      { id: 5, text: "Reach 1000 coins mined", completed: false },
-      { id: 6, text: "Unlock advanced mining tools", completed: false },
-    ]
-  },
-  {
-    id: 'goal_crusher',
-    name: 'Goal Crusher',
-    description: 'Achieve ambitious targets',
-    icon: 'FaCog',
-    color: 'text-green-400',
-    bgGradient: 'from-green-600/20 to-emerald-600/20',
-    borderColor: 'border-green-500/30',
-    tasks: [
-      { id: 1, text: "Set your first goal", completed: false },
-      { id: 2, text: "Complete 10 goals", completed: false },
-      { id: 3, text: "Achieve perfect day (100% goals)", completed: false },
-      { id: 4, text: "Complete 50 goals total", completed: false },
-      { id: 5, text: "Maintain 7-day goal streak", completed: false },
-      { id: 6, text: "Reach 100 goals milestone", completed: false },
+      { id: 3, text: "Reach 100 coins mined", completed: false },
     ]
   },
   {
@@ -110,23 +87,19 @@ const badgeDefinitions = [
     borderColor: 'border-yellow-500/30',
     tasks: [
       { id: 1, text: "Earn all other badges", completed: false },
-      { id: 2, text: "Reach top 10 leaderboard", completed: false },
-      { id: 3, text: "Refer 25+ successful users", completed: false },
-      { id: 4, text: "Mine 10,000+ coins", completed: false },
-      { id: 5, text: "Maintain 60-day streak", completed: false },
-      { id: 6, text: "Complete 500 goals", completed: false },
+      { id: 2, text: "Refer 25+ successful users", completed: false },
+      { id: 3, text: "Mine 1000+ coins", completed: false },
+      { id: 4, text: "Maintain 60-day streak", completed: false }
     ]
   }
 ];
 
-// Initialize badges for a new user - THIS WAS MISSING!
+// Initialize badges for a new user
 export const initializeUserBadges = async (uid) => {
   try {
     console.log('Initializing badges for user:', uid);
-    
-    // Use batch write for efficiency
     const batch = writeBatch(db);
-    
+
     badgeDefinitions.forEach((badge) => {
       const badgeRef = doc(db, 'users', uid, 'badges', badge.id);
       batch.set(badgeRef, {
@@ -139,7 +112,7 @@ export const initializeUserBadges = async (uid) => {
         borderColor: badge.borderColor,
         tasks: badge.tasks.map(task => ({
           ...task,
-          completed: task.completed || false,
+          completed: false,
           completedAt: null
         })),
         progress: 0,
@@ -147,12 +120,188 @@ export const initializeUserBadges = async (uid) => {
         earnedAt: null
       });
     });
-    
+
     await batch.commit();
     console.log('Badges initialized successfully');
     return { success: true };
   } catch (error) {
     console.error('Error initializing badges:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// ✅ Check if a specific task should be completed based on user data
+const checkTaskCompletion = (badgeId, taskId, userData) => {
+  const stats = userData.stats || {};
+  const mining = userData.mining || {};
+  const social = userData.social || {};
+  const profile = userData.profile || {};
+
+  switch (badgeId) {
+    case 'first_steps':
+      switch (taskId) {
+        case 1: // Complete profile setup
+          return profile.username && profile.email;
+        case 2: // Start first mining session
+          return mining.totalMiningSessions >= 1;
+        case 3: // Add profile picture
+          return profile.avatar || profile.profilePicture;
+        default:
+          return false;
+      }
+
+    case 'streak_master':
+      const currentStreak = stats.currentStreak || 0;
+      switch (taskId) {
+        case 1: // Login for 3 consecutive days
+          return currentStreak >= 3;
+        case 2: // Mine for 5 days straight
+          return currentStreak >= 5;
+        case 3: // Complete daily goals for 7 days
+          return currentStreak >= 7;
+        case 4: // Maintain 10-day login streak
+          return currentStreak >= 10;
+        case 5: // Achieve 15-day mining streak
+          return currentStreak >= 15;
+        case 6: // Reach 30-day activity streak
+          return currentStreak >= 30;
+        default:
+          return false;
+      }
+
+    case 'social_butterfly':
+      const totalReferrals = social.referredUsers?.length || 0;
+      switch (taskId) {
+        case 1: // Refer first friend
+          return totalReferrals >= 1;
+        case 2: // Get 3 successful referrals
+          return totalReferrals >= 3;
+        case 3: // Get 5 successful referrals
+          return totalReferrals >= 5;
+        default:
+          return false;
+      }
+
+    case 'mining_expert':
+      const totalSessions = mining.totalMiningSessions || 0;
+      const totalCoins = stats.totalCoinsEarned || 0;
+      // Calculate total hours (assuming each session is max 24 hours)
+      const totalHours = totalSessions * 24; // Simplified calculation
+      
+      switch (taskId) {
+        case 1: // Complete 10 mining sessions
+          return totalSessions >= 10;
+        case 2: // Mine for 100 total hours
+          return totalHours >= 100;
+        case 3: // Reach 100 coins mined
+          return totalCoins >= 100;
+        default:
+          return false;
+      }
+
+    case 'legend':
+      const legendTotalReferrals = social.referredUsers?.length || 0;
+      const legendTotalCoins = stats.totalCoinsEarned || 0;
+      const legendStreak = stats.currentStreak || 0;
+      
+      switch (taskId) {
+        case 1: // Earn all other badges
+          // This would need to check if all other badges are earned
+          return false; // Implement this logic separately
+        case 2: // Refer 25+ successful users
+          return legendTotalReferrals >= 25;
+        case 3: // Mine 1000+ coins
+          return legendTotalCoins >= 1000;
+        case 4: // Maintain 60-day streak
+          return legendStreak >= 60;
+        default:
+          return false;
+      }
+
+    default:
+      return false;
+  }
+};
+
+// ✅ Validate quest completion based on actual user data
+export const validateAndUpdateBadgeProgress = async (uid) => {
+  try {
+    const userRef = doc(db, 'users', uid);
+    const userSnap = await getDoc(userRef);
+    
+    if (!userSnap.exists()) {
+      return { success: false, error: 'User not found' };
+    }
+
+    const userData = userSnap.data();
+    const badges = await getUserBadges(uid);
+    if (!badges.success) return badges;
+
+    for (const badge of badges.badges) {
+      if (badge.isEarned) continue;
+
+      let hasUpdates = false;
+      let newTasksCompleted = []; // Track newly completed tasks
+      
+      const updatedTasks = badge.tasks.map(task => {
+        const shouldBeCompleted = checkTaskCompletion(badge.badgeId, task.id, userData);
+        
+        if (shouldBeCompleted && !task.completed) {
+          hasUpdates = true;
+          newTasksCompleted.push(task.text); // Add to newly completed
+          return {
+            ...task,
+            completed: true,
+            completedAt: new Date()
+          };
+        }
+        return task;
+      });
+
+      if (hasUpdates) {
+        const completedTasksCount = updatedTasks.filter(task => task.completed).length;
+        const progress = (completedTasksCount / updatedTasks.length) * 100;
+        const isEarned = progress === 100;
+
+        const badgeRef = doc(db, 'users', uid, 'badges', badge.badgeId);
+        await updateDoc(badgeRef, {
+          tasks: updatedTasks,
+          progress,
+          isEarned,
+          ...(isEarned && !badge.isEarned ? { earnedAt: new Date() } : {})
+        });
+
+        // 🔥 CREATE NOTIFICATIONS FOR NEW COMPLETIONS
+        for (const taskName of newTasksCompleted) {
+          await createTaskCompletionNotification(uid, taskName, badge.name);
+        }
+
+        // Progress milestone notifications (25%, 50%, 75%)
+        if (!isEarned && progress >= 25 && progress % 25 === 0) {
+          await createQuestProgressNotification(uid, badge.name, Math.round(progress));
+        }
+
+        // Badge completion notification
+        if (isEarned && !badge.isEarned) {
+          await createBadgeEarnedNotification(uid, badge.name);
+        }
+      }
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error validating badge progress:', error);
+    return { success: false, error: error.message };
+  }
+};
+// ✅ KEEP: Legacy function for backward compatibility (called by other services)
+export const checkBadgeConditions = async (uid, action, metadata = {}) => {
+  try {
+    // Instead of manually updating specific badges, just validate all badges
+    await validateAndUpdateBadgeProgress(uid);
+    return { success: true };
+  } catch (error) {
+    console.error('Error checking badge conditions:', error);
     return { success: false, error: error.message };
   }
 };
@@ -168,7 +317,7 @@ export const getUserBadges = async (uid) => {
       id: doc.id,
       ...doc.data()
     }));
-    
+
     return { success: true, badges };
   } catch (error) {
     console.error('Error getting user badges:', error);
@@ -190,132 +339,15 @@ export const subscribeToBadges = (uid, callback) => {
   });
 };
 
-// Update badge progress
-export const updateBadgeProgress = async (uid, badgeId, taskId, completed = true) => {
-  try {
-    const badgeRef = doc(db, 'users', uid, 'badges', badgeId);
-    const badgeDoc = await getDoc(badgeRef);
-    
-    if (!badgeDoc.exists()) {
-      return { success: false, error: 'Badge not found' };
-    }
-    
-    const badgeData = badgeDoc.data();
-    const updatedTasks = badgeData.tasks.map(task => 
-      task.id === taskId 
-        ? { ...task, completed, completedAt: completed ? new Date() : null }
-        : task
-    );
-    
-    const completedTasksCount = updatedTasks.filter(task => task.completed).length;
-    const progress = (completedTasksCount / updatedTasks.length) * 100;
-    const isEarned = progress === 100;
-    
-    const updateData = {
-      tasks: updatedTasks,
-      progress,
-      isEarned,
-      ...(isEarned && !badgeData.isEarned ? { earnedAt: new Date() } : {})
-    };
-    
-    await updateDoc(badgeRef, updateData);
-    
-    // Create notification if badge was just earned
-    if (isEarned && !badgeData.isEarned) {
-      await createBadgeEarnedNotification(uid, badgeData.name);
-    }
-    
-    return { 
-      success: true, 
-      badgeEarned: isEarned && !badgeData.isEarned,
-      progress 
-    };
-  } catch (error) {
-    console.error('Error updating badge progress:', error);
-    return { success: false, error: error.message };
-  }
-};
-
-// Helper function to check and update multiple badges based on user actions
-export const checkBadgeConditions = async (uid, action, metadata = {}) => {
-  try {
-    const badges = await getUserBadges(uid);
-    if (!badges.success) return;
-    
-    for (const badge of badges.badges) {
-      if (badge.isEarned) continue; // Skip already earned badges
-      
-      // Check different badge conditions
-      switch (action) {
-        case 'FIRST_LOGIN':
-          if (badge.badgeId === 'first_steps') {
-            await updateBadgeProgress(uid, badge.badgeId, 1, true); // Complete profile setup task
-          }
-          break;
-          
-        case 'MINING_STARTED':
-          if (badge.badgeId === 'first_steps') {
-            await updateBadgeProgress(uid, badge.badgeId, 2, true); // Start first mining session
-          }
-          if (badge.badgeId === 'mining_expert') {
-            const totalSessions = metadata.totalSessions || 0;
-            if (totalSessions >= 1) {
-              await updateBadgeProgress(uid, badge.badgeId, 1, true); // Complete 10 mining sessions
-            }
-          }
-          break;
-          
-        case 'MINING_COMPLETED':
-          if (badge.badgeId === 'mining_expert') {
-            const totalSessions = metadata.totalSessions || 0;
-            if (totalSessions >= 10) {
-              await updateBadgeProgress(uid, badge.badgeId, 1, true); // Complete 10 mining sessions
-            }
-          }
-          break;
-          
-        case 'REFERRAL_SUCCESS':
-          if (badge.badgeId === 'social_butterfly') {
-            const totalReferrals = metadata.totalReferrals || 0;
-            if (totalReferrals >= 1) {
-              await updateBadgeProgress(uid, badge.badgeId, 1, true); // Refer first friend
-            }
-            if (totalReferrals >= 3) {
-              await updateBadgeProgress(uid, badge.badgeId, 2, true); // Get 3 successful referrals
-            }
-          }
-          break;
-          
-        case 'STREAK_MILESTONE':
-          if (badge.badgeId === 'streak_master') {
-            const streakDays = metadata.streakDays || 0;
-            if (streakDays >= 3) {
-              await updateBadgeProgress(uid, badge.badgeId, 1, true); // Login for 3 consecutive days
-            }
-            if (streakDays >= 7) {
-              await updateBadgeProgress(uid, badge.badgeId, 3, true); // Complete daily goals for 7 days
-            }
-          }
-          break;
-          
-        default:
-          break;
-      }
-    }
-    
-    return { success: true };
-  } catch (error) {
-    console.error('Error checking badge conditions:', error);
-    return { success: false, error: error.message };
-  }
-};
-
-// Subscribe to real-time badge updates for carousel
+// Subscribe to real-time badge updates for carousel (with auto-validation)
 export const subscribeToBadgeQuests = (uid, callback) => {
   const badgesRef = collection(db, 'users', uid, 'badges');
   const q = query(badgesRef, orderBy('badgeId'));
   
-  return onSnapshot(q, (snapshot) => {
+  return onSnapshot(q, async (snapshot) => {
+    // Auto-validate badges whenever they're fetched
+    await validateAndUpdateBadgeProgress(uid);
+    
     const badges = snapshot.docs.map(doc => {
       const data = doc.data();
       return {
@@ -332,54 +364,16 @@ export const subscribeToBadgeQuests = (uid, callback) => {
         progress: data.progress || 0
       };
     });
+    
     callback(badges);
   });
 };
 
-// Update specific task in a badge
+// ✅ KEEP: For backward compatibility (used by BadgeQuests component)
 export const updateBadgeTask = async (uid, badgeId, taskId, completed = true) => {
-  try {
-    const badgeRef = doc(db, 'users', uid, 'badges', badgeId);
-    const badgeDoc = await getDoc(badgeRef);
-    
-    if (!badgeDoc.exists()) {
-      return { success: false, error: 'Badge not found' };
-    }
-    
-    const badgeData = badgeDoc.data();
-    const updatedTasks = badgeData.tasks.map(task => 
-      task.id === taskId 
-        ? { ...task, completed, completedAt: completed ? new Date() : null }
-        : task
-    );
-    
-    const completedTasksCount = updatedTasks.filter(task => task.completed).length;
-    const progress = (completedTasksCount / updatedTasks.length) * 100;
-    const isEarned = progress === 100;
-    
-    const updateData = {
-      tasks: updatedTasks,
-      progress,
-      isEarned,
-      ...(isEarned && !badgeData.isEarned ? { earnedAt: new Date() } : {})
-    };
-    
-    await updateDoc(badgeRef, updateData);
-    
-    // Create notification if badge was just earned
-    if (isEarned && !badgeData.isEarned) {
-      await createBadgeEarnedNotification(uid, badgeData.name);
-    }
-    
-    return { 
-      success: true, 
-      badgeEarned: isEarned && !badgeData.isEarned,
-      progress 
-    };
-  } catch (error) {
-    console.error('Error updating badge task:', error);
-    return { success: false, error: error.message };
-  }
+  // This function now just triggers validation instead of manual updates
+  await validateAndUpdateBadgeProgress(uid);
+  return { success: true, badgeEarned: false, progress: 0 };
 };
 
 // Export the badge definitions for use elsewhere

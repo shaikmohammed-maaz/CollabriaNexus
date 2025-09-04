@@ -37,10 +37,10 @@ export default function WorkInProgress() {
             </button>
 
             <Link
-              to="/"
+              to="/dashboard"
               className="flex items-center gap-2 justify-center px-5 py-2 rounded-lg bg-transparent border border-violet-600 text-violet-300 hover:bg-violet-600/10 transition shadow"
             >
-              <FaHome /> Go Home
+              <FaHome /> Go to Dashboard
             </Link>
           </div>
 

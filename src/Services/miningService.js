@@ -11,35 +11,22 @@ import { db } from "../firebase/config";
 import { createMiningCompletionNotification } from "./notificationService";
 import { checkBadgeConditions } from './badgeService';
 import { markMiningAsStreakActivity ,markMiningCompletionAsStreakActivity } from './streakService';
-
-const DAILY_REWARD = 3;
-const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+import { increment } from "firebase/firestore";
 
 export const startMiningSession = async (uid) => {
   try {
     const userRef = doc(db, 'users', uid);
     const userSnap = await getDoc(userRef);
-    
+
     if (!userSnap.exists()) {
       return { success: false, error: 'User not found' };
     }
 
-    const userData = userSnap.data();
-    
-    // Check if user can start mining (cooldown logic)
-    const now = new Date();
-    const nextAvailable = userData.mining?.nextAvailable;
-    
-    if (nextAvailable && now < nextAvailable.toDate()) {
-      const timeRemaining = nextAvailable.toDate() - now;
-      return { 
-        success: false, 
-        error: 'Mining on cooldown',
-        timeRemaining 
-      };
+    // Only allow if not already mining
+    if (userSnap.data().mining?.isMining) {
+      return { success: false, error: 'Mining already in progress' };
     }
 
-    // Start mining session
     await updateDoc(userRef, {
       'mining.isMining': true,
       'mining.lastMiningStart': serverTimestamp(),
@@ -47,10 +34,7 @@ export const startMiningSession = async (uid) => {
       'profile.lastActive': serverTimestamp()
     });
 
-    // **AUTOMATICALLY MARK TODAY'S STREAK** when mining starts
     await markMiningAsStreakActivity(uid);
-
-    // Check badge conditions for mining started
     await checkBadgeConditions(uid, 'MINING_STARTED');
 
     return { success: true };
@@ -75,32 +59,46 @@ export const updateMiningProgress = async (uid, coinsMined) => {
 
 
 // In your completeMiningSession function
-export const completeMiningSession = async (uid, finalCoins) => {
+export const completeMiningSession = async (uid) => {
   try {
     const userRef = doc(db, 'users', uid);
+    const userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) return { success: false, error: 'User not found' };
+
+    const userData = userSnap.data();
+    if (!userData.mining?.isMining || !userData.mining?.lastMiningStart) {
+      return { success: false, error: 'No mining session in progress' };
+    }
+
+    // Get server time
+    const serverTimeDoc = await addDoc(collection(db, 'serverTime'), { ts: serverTimestamp() });
+    const serverTimeSnap = await getDoc(serverTimeDoc);
+    const serverNow = serverTimeSnap.data().ts.toDate();
+
+    const startTime = userData.mining.lastMiningStart.toDate();
+    const elapsedMs = serverNow - startTime;
+    const miningRate = userData.mining.miningRate || 3.0;
+    const maxSessionMs = 24 * 60 * 60 * 1000;
+    const cappedElapsed = Math.min(elapsedMs, maxSessionMs);
+    const coinsEarned = parseFloat(((cappedElapsed / maxSessionMs) * miningRate).toFixed(1));
+
     await updateDoc(userRef, {
-      'mining.isMining': false,
-      'mining.coinsMined': finalCoins,
+      'stats.coinsEarned': increment(coinsEarned),
+      'stats.totalCoinsEarned': increment(coinsEarned),
+      'mining.coinsMined': 0,
       'mining.totalMiningSessions': increment(1),
-      'stats.totalCoinsEarned': increment(finalCoins),
-      'mining.nextAvailable': null
+      'mining.isMining': false,
+      'mining.lastMiningStart': null,
+      'mining.nextAvailable': null // or set cooldown timestamp if needed
     });
 
-    // Create notification for completed mining session
-    await createMiningCompletionNotification(uid, finalCoins);
-    
-    // **MARK MINING COMPLETION AS STREAK ACTIVITY**
+    await createMiningCompletionNotification(uid, coinsEarned);
     await markMiningCompletionAsStreakActivity(uid);
-    
-    // Check badge conditions for mining completed
-    const userSnap = await getDoc(userRef);
-    const totalSessions = userSnap.data()?.mining?.totalMiningSessions || 0;
-    
-    await checkBadgeConditions(uid, 'MINING_COMPLETED', { 
-      totalSessions: totalSessions + 1 
+    await checkBadgeConditions(uid, 'MINING_COMPLETED', {
+      totalSessions: (userData.mining.totalMiningSessions || 0) + 1
     });
-    
-    return { success: true };
+
+    return { success: true, coinsEarned };
   } catch (error) {
     return { success: false, error: error.message };
   }

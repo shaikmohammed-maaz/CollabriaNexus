@@ -1,11 +1,16 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { useState, useEffect } from 'react';
-import './App.css';
-import Login from './Login';
-import SignUp from './SignUp';
-import Home from './Home';
-import NavBar from './NavBar';
-import Footer from './Footer';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { useState, useEffect } from "react";
+import "./App.css";
+import Login from "./Login";
+import SignUp from "./SignUp";
+import Home from "./Home";
+import NavBar from "./NavBar";
+import Footer from "./Footer";
 import Dashboard from "./DashBoard";
 import BlogPage from "./Blog";
 import AboutUs from "./Aboutus";
@@ -13,10 +18,11 @@ import ContactUs from "./ContactUs";
 import Friends from "./Friends";
 import Profile from "./Profile";
 import WorkInProgress from "./WorkInProgress";
+import initializeApp from "./Services/InitializeMiningApp";
 
 // Import Firebase components
-import { AuthProvider } from './Services/AuthContext';
-import { onAuthChange } from './Services/authService';
+import { AuthProvider } from "./Services/AuthContext";
+import { onAuthChange } from "./Services/authService";
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -24,9 +30,18 @@ const ProtectedRoute = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthChange((user) => {
+    const unsubscribe = onAuthChange(async (user) => {
       setIsAuthenticated(!!user);
       setLoading(false);
+
+      if (user) {
+        try {
+          await initializeApp(user.uid);
+
+        } catch (error) {
+          console.error("Error initializing app for user:", error);
+        }
+      }
     });
 
     return unsubscribe;

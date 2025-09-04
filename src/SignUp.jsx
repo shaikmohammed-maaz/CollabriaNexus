@@ -57,7 +57,7 @@ export default function SignUp({ onSignUp }) {
     setIsLoading(false);
     if (result.success) {
       onSignUp && onSignUp();
-      navigate("/");
+      navigate("/dashboard");
     } else {
       setErrors({ general: result.error });
     }

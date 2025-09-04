@@ -125,3 +125,21 @@ export const createPokeNotification = async (uid, fromUserName) => {
   });
 };
 
+
+// Task completion notification
+export const createTaskCompletionNotification = async (uid, taskName, badgeName) => {
+  return await createNotification(uid, {
+    message: `✅ Task completed: "${taskName}" in ${badgeName} badge!`,
+    type: 'task_completed',
+    metadata: { taskName, badgeName }
+  });
+};
+
+// Quest progress notification
+export const createQuestProgressNotification = async (uid, badgeName, progress) => {
+  return await createNotification(uid, {
+    message: `🎯 ${progress}% progress on "${badgeName}" badge!`,
+    type: 'quest_progress', 
+    metadata: { badgeName, progress }
+  });
+};

@@ -9,6 +9,8 @@ import {
   FaCoins,
   FaGift,
   FaTrophy,
+  FaCheckCircle,
+  FaAdn,
 } from "react-icons/fa";
 import dayjs from "dayjs";
 import { useAuth } from "./Services/AuthContext";
@@ -240,13 +242,16 @@ const ActionButton = styled.button`
     transform: translateY(-1px);
   }
 `;
-
 const getNotificationIcon = (type) => {
   switch (type) {
     case "mining_completed":
       return <FaCoins />;
     case "badge_earned":
       return <FaTrophy />;
+    case "task_completed": // ✅ New
+      return <FaCheckCircle />;
+    case "quest_progress": // ✅ New
+      return <FaAdn />;
     case "referral_success":
       return <FaUsers />;
     case "streak_milestone":
@@ -259,13 +264,16 @@ const getNotificationIcon = (type) => {
       return <FaBell />;
   }
 };
-
 const getNotificationColor = (type) => {
   switch (type) {
     case "mining_completed":
       return "#fbbf24";
     case "badge_earned":
       return "#8b5cf6";
+    case "task_completed": // ✅ New
+      return "#10b981";
+    case "quest_progress": // ✅ New
+      return "#06b6d4";
     case "referral_success":
       return "#10b981";
     case "streak_milestone":

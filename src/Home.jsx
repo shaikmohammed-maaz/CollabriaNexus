@@ -53,9 +53,10 @@ const Home = () => {
   ];
 
   const tabs = [
-    { id: "learn", label: "Learn", icon: FaBookOpen },
-    { id: "connect", label: "Connect", icon: FaUsers },
+    
     { id: "discover", label: "Discover", icon: FaSearch },
+    { id: "connect", label: "Connect", icon: FaUsers },
+    { id: "learn", label: "Learn", icon: FaBookOpen },
     { id: "grow", label: "Grow", icon: FaArrowRight },
   ];
 
