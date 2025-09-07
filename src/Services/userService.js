@@ -291,3 +291,15 @@ export const updateLastActive = async (uid) => {
     console.error('Error updating last active:', error);
   }
 };
+
+export const subscribeToUserProfile = (uid, callback) => {
+  const unsub = onSnapshot(doc(db, "users", uid), (docSnap) => {
+    if (docSnap.exists()) {
+      callback({ success: true, data: docSnap.data() });
+    } else {
+      callback({ success: false, error: "No profile found" });
+    }
+  });
+
+  return unsub;
+};

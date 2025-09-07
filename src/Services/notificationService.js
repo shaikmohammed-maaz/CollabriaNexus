@@ -3,8 +3,6 @@ import {
   addDoc, 
   updateDoc, 
   doc, 
-  query, 
-  orderBy, 
   onSnapshot, 
   serverTimestamp,
   where 
@@ -14,17 +12,20 @@ import { db } from '../firebase/config';
 // Subscribe to real-time notifications
 export const subscribeToNotifications = (uid, callback) => {
   const notificationsRef = collection(db, 'users', uid, 'notifications');
-  const q = query(
-    notificationsRef, 
-    where('isDismissed', '==', false),
-    orderBy('timestamp', 'desc')
-  );
-  
-  return onSnapshot(q, (snapshot) => {
-    const notifications = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+  // Remove query, where, and orderBy
+  return onSnapshot(notificationsRef, (snapshot) => {
+    // Filter and sort in JS
+    const notifications = snapshot.docs
+      .map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }))
+      .filter(n => !n.isDismissed)
+      .sort((a, b) => {
+        // Sort by timestamp descending
+        if (!a.timestamp || !b.timestamp) return 0;
+        return b.timestamp.seconds - a.timestamp.seconds;
+      });
     callback(notifications);
   });
 };

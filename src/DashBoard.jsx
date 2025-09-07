@@ -72,20 +72,7 @@ export default function Dashboard() {
           email: "",
         };
 
-  // Show loading state if user data is not available
-  if (!currentUser || !userProfile) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-400 mx-auto mb-4"></div>
-          <p className="text-slate-300 text-lg">Loading your dashboard...</p>
-          <p className="text-slate-500 text-sm mt-2">
-            Setting up your personalized experience
-          </p>
-        </div>
-      </div>
-    );
-  }
+  
 
   const navItems = [
     { icon: FaHome, path: "/dashboard", label: "Home" },
@@ -102,10 +89,19 @@ export default function Dashboard() {
 
   const [hoveredIndex, setHoveredIndex] = React.useState(null);
 
-  console.log(currentUser, userProfile);
-
   return (
     <div className="min-h-screen pt-20 bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 text-white relative overflow-hidden">
+     {(!currentUser || !userProfile) ? (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-400 mx-auto mb-4"></div>
+          <p className="text-slate-300 text-lg">Loading your dashboard...</p>
+          <p className="text-slate-500 text-sm mt-2">Setting up your personalized experience</p>
+        </div>
+      </div>
+    ) : (
+      <>
+        
       {/* Animated Background Elements */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-0 left-10 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl animate-pulse" />
@@ -413,6 +409,9 @@ export default function Dashboard() {
           </div>
         </main>
       </div>
+
+      </>
+    )}
     </div>
   );
 }

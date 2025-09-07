@@ -4,6 +4,7 @@ import {
   setDoc,
   updateDoc,
   collection,
+  onSnapshot,
   query,
   where,
   getDocs,
@@ -14,25 +15,28 @@ import { db } from '../firebase/config';
 import { checkBadgeConditions } from './badgeService';
 import { createStreakMilestoneNotification } from './notificationService';
 
+
 // Get user's streak data for a specific month
 export const getStreakData = async (uid, year, month) => {
   try {
     const streakRef = collection(db, 'users', uid, 'streakData');
-    const q = query(
-      streakRef,
-      where('date', '>=', `${year}-${month.toString().padStart(2, '0')}-01`),
-      where('date', '<=', `${year}-${month.toString().padStart(2, '0')}-31`)
-    );
-
-    const snapshot = await getDocs(q);
+    const snapshot = await getDocs(streakRef);
     const streakData = {};
 
     snapshot.docs.forEach(doc => {
       const data = doc.data();
-      streakData[data.date] = {
-        completed: data.completed,
-        activities: data.activities || []
-      };
+      if (data.date) {
+        const [docYear, docMonth] = data.date.split('-');
+        if (
+          parseInt(docYear) === parseInt(year) &&
+          parseInt(docMonth) === parseInt(month)
+        ) {
+          streakData[data.date] = {
+            completed: data.completed,
+            activities: data.activities || []
+          };
+        }
+      }
     });
 
     return { success: true, streakData };
@@ -46,8 +50,9 @@ export const getStreakData = async (uid, year, month) => {
 export const calculateCurrentStreak = async (uid) => {
   try {
     const streakRef = collection(db, 'users', uid, 'streakData');
-    const snapshot = await getDocs(q);
-    
+    // Fetch all streak documents for the user (not filtered by month/year)
+    const snapshot = await getDocs(streakRef);
+
     const today = new Date();
     const completedDates = [];
 
@@ -74,7 +79,7 @@ export const calculateCurrentStreak = async (uid) => {
     for (const dateStr of completedDates) {
       const date = new Date(dateStr);
       date.setHours(0, 0, 0, 0); // Normalize to start of day
-      
+
       const daysDiff = Math.floor((currentDate - date) / (1000 * 60 * 60 * 24));
 
       if (daysDiff === 0 || daysDiff === 1) {

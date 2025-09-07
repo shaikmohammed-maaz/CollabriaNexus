@@ -310,13 +310,16 @@ export const checkBadgeConditions = async (uid, action, metadata = {}) => {
 export const getUserBadges = async (uid) => {
   try {
     const badgesRef = collection(db, 'users', uid, 'badges');
-    const q = query(badgesRef, orderBy('badgeId'));
-    const snapshot = await getDocs(q);
+    // Remove query and orderBy, just get all docs
+    const snapshot = await getDocs(badgesRef);
     
-    const badges = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    // Sort in JS
+    const badges = snapshot.docs
+      .map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }))
+      .sort((a, b) => (a.badgeId > b.badgeId ? 1 : -1));
 
     return { success: true, badges };
   } catch (error) {
@@ -328,13 +331,14 @@ export const getUserBadges = async (uid) => {
 // Subscribe to real-time badge updates
 export const subscribeToBadges = (uid, callback) => {
   const badgesRef = collection(db, 'users', uid, 'badges');
-  const q = query(badgesRef, orderBy('badgeId'));
-  
-  return onSnapshot(q, (snapshot) => {
-    const badges = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+  // Remove query and orderBy, just use collection ref
+  return onSnapshot(badgesRef, (snapshot) => {
+    const badges = snapshot.docs
+      .map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }))
+      .sort((a, b) => (a.badgeId > b.badgeId ? 1 : -1));
     callback(badges);
   });
 };
@@ -342,29 +346,27 @@ export const subscribeToBadges = (uid, callback) => {
 // Subscribe to real-time badge updates for carousel (with auto-validation)
 export const subscribeToBadgeQuests = (uid, callback) => {
   const badgesRef = collection(db, 'users', uid, 'badges');
-  const q = query(badgesRef, orderBy('badgeId'));
-  
-  return onSnapshot(q, async (snapshot) => {
-    // Auto-validate badges whenever they're fetched
+  // Remove query and orderBy, just use collection ref
+  return onSnapshot(badgesRef, async (snapshot) => {
     await validateAndUpdateBadgeProgress(uid);
-    
-    const badges = snapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        badgeId: data.badgeId,
-        name: data.name,
-        description: data.description,
-        icon: data.icon,
-        color: data.color,
-        bgGradient: data.bgGradient,
-        borderColor: data.borderColor,
-        tasks: data.tasks || [],
-        isEarned: data.isEarned || false,
-        progress: data.progress || 0
-      };
-    });
-    
+    const badges = snapshot.docs
+      .map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          badgeId: data.badgeId,
+          name: data.name,
+          description: data.description,
+          icon: data.icon,
+          color: data.color,
+          bgGradient: data.bgGradient,
+          borderColor: data.borderColor,
+          tasks: data.tasks || [],
+          isEarned: data.isEarned || false,
+          progress: data.progress || 0
+        };
+      })
+      .sort((a, b) => (a.badgeId > b.badgeId ? 1 : -1));
     callback(badges);
   });
 };

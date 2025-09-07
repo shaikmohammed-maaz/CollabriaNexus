@@ -36,7 +36,7 @@ const ProtectedRoute = ({ children }) => {
 
       if (user) {
         try {
-          await initializeApp(user.uid);
+          // await initializeApp(user.uid);
 
         } catch (error) {
           console.error("Error initializing app for user:", error);

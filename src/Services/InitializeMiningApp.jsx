@@ -50,7 +50,7 @@ const initializeApp = async (uid) => {
       }
     }
     
-    console.log("incpmplete")
+    console.log("incomplete")
     
     return { sessionAutoCompleted: false };
   } catch (error) {

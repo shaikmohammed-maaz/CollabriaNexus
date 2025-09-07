@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import CubeAnimation from "./CubeAnimation";
+import { db } from "./firebase/config"; // Import Firestore and server timestamp
+import { collection, addDoc, getDoc } from "firebase/firestore"; // Firestore functions
 import { useAuth } from "./Services/AuthContext"; // Import auth context
 import {
   startMiningSession,
@@ -52,6 +54,8 @@ const MiningSection = () => {
   const resumeMiningSession = async (startTimestamp) => {
     const elapsedMinutes = calculateElapsedTime(startTimestamp);
     const miningRate = mining.miningRate || 3.0;
+
+    console.log("Resuming mining session. Elapsed minutes:", elapsedMinutes);
 
     if (elapsedMinutes >= 1440) {
       await handleCompleteMining();
@@ -161,7 +165,9 @@ const MiningSection = () => {
             ? miningData.lastMiningStart.seconds * 1000
             : miningData.lastMiningStart
         );
+        console.log("Last mining start time:", startTime);
         const elapsed = Date.now() - startTime.getTime();
+        console.log("Elapsed time since mining start (ms):", elapsed);
 
         if (elapsed < ONE_DAY_MS) {
           resumeMiningSession(miningData.lastMiningStart);
