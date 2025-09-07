@@ -6,50 +6,57 @@ import {
   serverTimestamp,
   onSnapshot,
   getDoc,
+  runTransaction,
+  increment,
 } from "firebase/firestore";
 import { db } from "../firebase/config";
 import { createMiningCompletionNotification } from "./notificationService";
-import { checkBadgeConditions } from './badgeService';
-import { markMiningAsStreakActivity ,markMiningCompletionAsStreakActivity } from './streakService';
-import { increment } from "firebase/firestore";
+import { checkBadgeConditions } from "./badgeService";
+import { markMiningAsStreakActivity, markMiningCompletionAsStreakActivity } from "./streakService";
+
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
 export const startMiningSession = async (uid) => {
   try {
-    const userRef = doc(db, 'users', uid);
-    const userSnap = await getDoc(userRef);
+    const userRef = doc(db, "users", uid);
 
-    if (!userSnap.exists()) {
-      return { success: false, error: 'User not found' };
-    }
+    await runTransaction(db, async (tx) => {
+      const snap = await tx.get(userRef);
+      if (!snap.exists()) {
+        throw new Error("User not found");
+      }
+      const data = snap.data();
 
-    // Only allow if not already mining
-    if (userSnap.data().mining?.isMining) {
-      return { success: false, error: 'Mining already in progress' };
-    }
+      // Only allow if not already mining
+      if (data.mining?.isMining) {
+        throw new Error("Mining already in progress");
+      }
 
-    await updateDoc(userRef, {
-      'mining.isMining': true,
-      'mining.lastMiningStart': serverTimestamp(),
-      'mining.coinsMined': 0,
-      'profile.lastActive': serverTimestamp()
+      tx.update(userRef, {
+        "mining.isMining": true,
+        "mining.lastMiningStart": serverTimestamp(),
+        "mining.coinsMined": 0,
+        "mining.nextAvailable": null, // allow immediate start after completion
+        "profile.lastActive": serverTimestamp(),
+      });
     });
 
     await markMiningAsStreakActivity(uid);
-    await checkBadgeConditions(uid, 'MINING_STARTED');
+    await checkBadgeConditions(uid, "MINING_STARTED");
 
     return { success: true };
   } catch (error) {
-    console.error('Error starting mining session:', error);
+    console.error("Error starting mining session:", error);
     return { success: false, error: error.message };
   }
 };
 
+// Keep for visual progress only; do not modify stats here
 export const updateMiningProgress = async (uid, coinsMined) => {
   try {
     const userRef = doc(db, "users", uid);
     await updateDoc(userRef, {
       "mining.coinsMined": coinsMined,
-      "stats.coinsEarned": coinsMined,
     });
     return { success: true };
   } catch (error) {
@@ -57,59 +64,65 @@ export const updateMiningProgress = async (uid, coinsMined) => {
   }
 };
 
-
-// In your completeMiningSession function
 export const completeMiningSession = async (uid) => {
   try {
-    const userRef = doc(db, 'users', uid);
-    const userSnap = await getDoc(userRef);
-    if (!userSnap.exists()) return { success: false, error: 'User not found' };
-
-    const userData = userSnap.data();
-    if (!userData.mining?.isMining || !userData.mining?.lastMiningStart) {
-      return { success: false, error: 'No mining session in progress' };
-    }
-
-    // Get server time
-    const serverTimeDoc = await addDoc(collection(db, 'serverTime'), { ts: serverTimestamp() });
+    // Get server time once to avoid client clock skew
+    const serverTimeDoc = await addDoc(collection(db, "serverTime"), { ts: serverTimestamp() });
     const serverTimeSnap = await getDoc(serverTimeDoc);
     const serverNow = serverTimeSnap.data().ts.toDate();
 
-    const startTime = userData.mining.lastMiningStart.toDate();
-    const elapsedMs = serverNow - startTime;
-    const miningRate = userData.mining.miningRate || 3.0;
-    const maxSessionMs = 24 * 60 * 60 * 1000;
-    const cappedElapsed = Math.min(elapsedMs, maxSessionMs);
-    const coinsEarned = parseFloat(((cappedElapsed / maxSessionMs) * miningRate).toFixed(1));
+    const userRef = doc(db, "users", uid);
+    let coinsEarned = 0;
 
-    await updateDoc(userRef, {
-      'stats.coinsEarned': increment(coinsEarned),
-      'stats.totalCoinsEarned': increment(coinsEarned),
-      'mining.coinsMined': 0,
-      'mining.totalMiningSessions': increment(1),
-      'mining.isMining': false,
-      'mining.lastMiningStart': null,
-      'mining.nextAvailable': null // or set cooldown timestamp if needed
+    await runTransaction(db, async (tx) => {
+      const snap = await tx.get(userRef);
+      if (!snap.exists()) {
+        throw new Error("User not found");
+      }
+
+      const data = snap.data();
+      if (!data.mining?.isMining || !data.mining?.lastMiningStart) {
+        // Idempotent no-op: another tab might have already completed
+        coinsEarned = 0;
+        return;
+      }
+
+      const startTime = data.mining.lastMiningStart.toDate();
+      const elapsedMs = serverNow - startTime;
+      const miningRate = data.mining.miningRate || 3.0; // coins per day
+      const cappedElapsed = Math.min(Math.max(elapsedMs, 0), ONE_DAY_MS);
+      coinsEarned = parseFloat(((cappedElapsed / ONE_DAY_MS) * miningRate).toFixed(1));
+
+      tx.update(userRef, {
+        "stats.coinsEarned": increment(coinsEarned),
+        "stats.totalCoinsEarned": increment(coinsEarned),
+        "mining.coinsMined": 0,
+        "mining.totalMiningSessions": increment(1),
+        "mining.isMining": false,
+        "mining.lastMiningStart": null,
+        "mining.nextAvailable": null, // no cooldown; immediate restart allowed
+      });
     });
 
-    await createMiningCompletionNotification(uid, coinsEarned);
-    await markMiningCompletionAsStreakActivity(uid);
-    await checkBadgeConditions(uid, 'MINING_COMPLETED', {
-      totalSessions: (userData.mining.totalMiningSessions || 0) + 1
-    });
+    if (coinsEarned > 0) {
+      // Side-effects after the atomic update
+      await createMiningCompletionNotification(uid, coinsEarned);
+      await markMiningCompletionAsStreakActivity(uid);
+      await checkBadgeConditions(uid, "MINING_COMPLETED");
+    }
 
     return { success: true, coinsEarned };
   } catch (error) {
+    console.error("Error completing mining session:", error);
     return { success: false, error: error.message };
   }
 };
 
-
 export const subscribeToMiningUpdates = (uid, callback) => {
   const userRef = doc(db, "users", uid);
-  return onSnapshot(userRef, (doc) => {
-    if (doc.exists()) {
-      callback(doc.data().mining);
+  return onSnapshot(userRef, (docSnap) => {
+    if (docSnap.exists()) {
+      callback(docSnap.data().mining);
     }
   });
 };

@@ -19,6 +19,7 @@ import Friends from "./Friends";
 import Profile from "./Profile";
 import WorkInProgress from "./WorkInProgress";
 import initializeApp from "./Services/InitializeMiningApp";
+import AdminBlog from "./AdminBlog";
 
 // Import Firebase components
 import { AuthProvider } from "./Services/AuthContext";
@@ -101,6 +102,7 @@ function App() {
           <Route path="/about" element={<AboutUs />} />
           <Route path="/contact" element={<ContactUs />} />
           <Route path="/work-in-progress" element={<WorkInProgress />} />
+          <Route path="/admin/blog" element={<AdminBlog />} />
 
           {/* Auth Routes - Redirect to dashboard if already logged in */}
           <Route

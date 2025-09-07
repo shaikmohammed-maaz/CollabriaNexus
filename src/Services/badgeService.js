@@ -28,8 +28,7 @@ const badgeDefinitions = [
     borderColor: 'border-blue-500/30',
     tasks: [
       { id: 1, text: "Complete profile setup", completed: false },
-      { id: 2, text: "Start your first mining session", completed: false },
-      { id: 3, text: "Add a profile picture", completed: false },
+      { id: 2, text: "Start your first mining session", completed: false }
     ]
   },
   {
@@ -144,8 +143,6 @@ const checkTaskCompletion = (badgeId, taskId, userData) => {
           return profile.username && profile.email;
         case 2: // Start first mining session
           return mining.totalMiningSessions >= 1;
-        case 3: // Add profile picture
-          return profile.avatar || profile.profilePicture;
         default:
           return false;
       }
@@ -242,26 +239,34 @@ export const validateAndUpdateBadgeProgress = async (uid) => {
 
       let hasUpdates = false;
       let newTasksCompleted = []; // Track newly completed tasks
-      
-      const updatedTasks = badge.tasks.map(task => {
-        const shouldBeCompleted = checkTaskCompletion(badge.badgeId, task.id, userData);
-        
-        if (shouldBeCompleted && !task.completed) {
+
+      // Reconcile with canonical badge definition (removes deprecated tasks like profile picture, adds missing)
+      const def = badgeDefinitions.find(b => b.id === badge.badgeId);
+      const existingTasks = Array.isArray(badge.tasks) ? badge.tasks : [];
+      const updatedTasks = (def?.tasks || existingTasks).map((defTask) => {
+        const existing = existingTasks.find(t => t.id === defTask.id) || defTask;
+        const shouldBeCompleted = checkTaskCompletion(badge.badgeId, defTask.id, userData);
+        const nowCompleting = shouldBeCompleted && !existing.completed;
+        if (nowCompleting) {
           hasUpdates = true;
-          newTasksCompleted.push(task.text); // Add to newly completed
-          return {
-            ...task,
-            completed: true,
-            completedAt: new Date()
-          };
+          newTasksCompleted.push(defTask.text);
         }
-        return task;
+        return {
+          ...defTask,
+          completed: existing.completed || shouldBeCompleted,
+          completedAt: existing.completedAt || (nowCompleting ? new Date() : null),
+        };
       });
+
+      // If lengths differ (e.g., deprecated tasks removed), mark update
+      if (def && existingTasks.length !== def.tasks.length) {
+        hasUpdates = true;
+      }
 
       if (hasUpdates) {
         const completedTasksCount = updatedTasks.filter(task => task.completed).length;
-        const progress = (completedTasksCount / updatedTasks.length) * 100;
-        const isEarned = progress === 100;
+        const progress = (completedTasksCount / (updatedTasks.length || 1)) * 100;
+        const isEarned = completedTasksCount === updatedTasks.length && updatedTasks.length > 0;
 
         const badgeRef = doc(db, 'users', uid, 'badges', badge.badgeId);
         await updateDoc(badgeRef, {
@@ -342,7 +347,7 @@ export const subscribeToBadges = (uid, callback) => {
     callback(badges);
   });
 };
-
+    
 // Subscribe to real-time badge updates for carousel (with auto-validation)
 export const subscribeToBadgeQuests = (uid, callback) => {
   const badgesRef = collection(db, 'users', uid, 'badges');

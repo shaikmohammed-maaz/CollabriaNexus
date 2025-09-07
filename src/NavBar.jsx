@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { FaHome, FaBlog, FaParagraph, FaChartBar, FaBars, FaTimes } from "react-icons/fa";
+import { FaHome, FaBook, FaInfoCircle, FaChartBar, FaBars, FaTimes  } from "react-icons/fa";
 import Logo from './assets/LOGO.png';
 
 export default function NavBar() {
@@ -26,8 +26,8 @@ export default function NavBar() {
 
   const navItems = [
     { to: "/", label: "Home", icon: <FaHome /> },
-    { to: "/blog", label: "Blogs", icon: <FaBlog /> },
-    { to: "/about", label: "About Us", icon: <FaParagraph /> },
+    { to: "/blog", label: "Blogs", icon: <FaBook /> },
+    { to: "/about", label: "About Us", icon: <FaInfoCircle /> },
     { to: "/dashboard", label: "Dashboard", icon: <FaChartBar /> },
   ];
 

@@ -254,6 +254,8 @@ const getNotificationIcon = (type) => {
       return <FaAdn />;
     case "referral_success":
       return <FaUsers />;
+    case "poke_notification":
+      return <FaUsers />;
     case "streak_milestone":
       return <FaFire />;
     case "welcome_bonus":
@@ -276,6 +278,8 @@ const getNotificationColor = (type) => {
       return "#06b6d4";
     case "referral_success":
       return "#10b981";
+    case "poke_notification":
+      return "#06b6d4";
     case "streak_milestone":
       return "#f97316";
     case "welcome_bonus":

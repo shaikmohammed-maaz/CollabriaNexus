@@ -59,7 +59,8 @@ export default function SignUp({ onSignUp }) {
       onSignUp && onSignUp();
       navigate("/dashboard");
     } else {
-      setErrors({ general: result.error });
+      // Show error message or fallback
+      setErrors({ general: result.error || "Sign up failed. Please try again." });
     }
   };
 
@@ -219,6 +220,9 @@ export default function SignUp({ onSignUp }) {
                 "Create Account"
               )}
             </button>
+            {errors.general && (
+              <p className="text-error text-center text-sm mb-2">{errors.general}</p>
+            )}
           </form>
 
           <div className="mt-8 text-center text-sm text-textMuted">

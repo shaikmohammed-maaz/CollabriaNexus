@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import CubeAnimation from "./CubeAnimation";
 import { db } from "./firebase/config"; // Import Firestore and server timestamp
-import { collection, addDoc, getDoc } from "firebase/firestore"; // Firestore functions
+import { collection, addDoc, getDoc, serverTimestamp } from "firebase/firestore"; // Add serverTimestamp
 import { useAuth } from "./Services/AuthContext"; // Import auth context
 import {
   startMiningSession,
@@ -24,6 +24,7 @@ const MiningSection = () => {
   const [nextAvailable, setNextAvailable] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [elapsedTime, setElapsedTime] = useState(0); // ⏱️ Add this for timer
   const intervalRef = useRef(null);
   const unsubscribeRef = useRef(null);
 
@@ -190,7 +191,7 @@ const MiningSection = () => {
   const getServerTime = async () => {
     // Use Firestore serverTimestamp roundtrip to get server time
     const serverTimeDoc = await addDoc(collection(db, "serverTime"), {
-      ts: serverTime(),
+      ts: serverTimestamp(),
     });
     const snap = await getDoc(serverTimeDoc);
     const serverTime = snap.data().ts.toDate();
@@ -308,6 +309,37 @@ const MiningSection = () => {
     }
   };
 
+  // Timer effect: runs when mining starts or resumes
+  useEffect(() => {
+    let timerInterval = null;
+    if (isMining && mining.lastMiningStart) {
+      const startTime =
+        mining.lastMiningStart.seconds
+          ? mining.lastMiningStart.seconds * 1000
+          : new Date(mining.lastMiningStart).getTime();
+
+      timerInterval = setInterval(() => {
+        setElapsedTime(Date.now() - startTime);
+      }, 1000);
+    } else {
+      setElapsedTime(0);
+    }
+    return () => {
+      if (timerInterval) clearInterval(timerInterval);
+    };
+  }, [isMining, mining.lastMiningStart]);
+
+  // Add this function to format elapsed time
+  const formatElapsedTime = (ms) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return `${hours.toString().padStart(2, "0")}:${minutes
+      .toString()
+      .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+  };
+
   // Show loading state if user data is not available
   if (!currentUser || !userProfile) {
     return (
@@ -375,7 +407,7 @@ const MiningSection = () => {
             Mining Rate
           </p>
           <p className="text-lg text-purple-400 font-bold drop-shadow">
-            {getMiningRate().toFixed(6)} coins/hour
+            {getMiningRate().toFixed(6)} coins/day
           </p>
         </div>
 
@@ -392,10 +424,16 @@ const MiningSection = () => {
         {/* Mining status and action */}
         <div className="flex flex-col items-center mt-2 w-full">
           {isMining ? (
-            <p className="text-sm text-green-400 font-semibold flex items-center mb-2 transition-all duration-300">
-              Mining in progress...&nbsp;
-              <span className="text-purple-300">{formatTimeRemaining()}</span>
-            </p>
+            <>
+              <p className="text-sm text-green-400 font-semibold flex items-center mb-2 transition-all duration-300">
+                Mining in progress...&nbsp;
+                <span className="text-purple-300">{formatTimeRemaining()}</span>
+              </p>
+              {/* ⏱️ Live timer display */}
+              <p className="text-xs text-purple-400 font-mono mb-2">
+                Elapsed: {formatElapsedTime(elapsedTime)}
+              </p>
+            </>
           ) : (
             <button
               onClick={handleStartMining}

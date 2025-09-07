@@ -377,7 +377,7 @@ export default function Dashboard() {
           {/* Sidebar Content */}
           <div className="flex flex-col gap-6">
             {/* Achievements */}
-            <div className="group bg-slate-800/70 backdrop-blur-xl border border-violet-500/30 rounded-2xl p-6 shadow-xl hover:shadow-2xl hover:shadow-violet-500/20 transition-all duration-500 hover:bg-slate-800/80 h-[350px] relative overflow-hidden">
+            <div className="group bg-slate-800/70 backdrop-blur-xl border border-violet-500/30 rounded-2xl p-6 shadow-xl hover:shadow-2xl hover:shadow-violet-500/20 transition-all duration-500 hover:bg-slate-800/80 h-[380px] relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-r from-yellow-600/5 to-orange-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl" />
               <div className="relative z-10 h-full">
                 <Achievements />
@@ -393,7 +393,7 @@ export default function Dashboard() {
             </div>
 
             {/* Badge Quest System */}
-            <div className="group bg-slate-800/70 backdrop-blur-xl border border-violet-500/30 rounded-2xl p-6 shadow-xl hover:shadow-2xl hover:shadow-violet-500/20 transition-all duration-500 hover:bg-slate-800/80 h-[450px] relative overflow-hidden">
+            <div className="group bg-slate-800/70 backdrop-blur-xl border border-violet-500/30 rounded-2xl p-6 shadow-xl hover:shadow-2xl hover:shadow-violet-500/20 transition-all duration-500 hover:bg-slate-800/80 h-[480px] relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl" />
               <div className="relative z-10 h-full">
                 <h2 className="text-xl font-bold text-violet-300 mb-4 flex items-center gap-3">
